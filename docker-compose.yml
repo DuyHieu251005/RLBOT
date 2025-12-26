@@ -1,0 +1,21 @@
+services:
+  backend:
+    build: ./backend
+    container_name: rlbot-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    # Mount code for dev (optional, remove in production)
+    # volumes:
+    #   - ./backend:/app
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: rlbot-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: always

@@ -1,0 +1,40 @@
+# PDF Processing
+pymupdf>=1.23.0
+
+# Database
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+pgvector>=0.2.0
+
+# API Server
+fastapi>=0.109.0
+uvicorn>=0.27.0
+python-multipart>=0.0.6
+
+# AI/LLM
+google-generativeai>=0.7.0
+httpx>=0.25.0
+requests>=2.31.0
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+pydantic-settings>=2.0.0
+
+# Auth (JWT Handling)
+bcrypt>=4.0.0
+pyjwt>=2.8.0
+
+# Performance & Caching
+aiofiles>=23.0.0
+cachetools>=5.3.0
+slowapi>=0.1.9
+
+# File Processing
+chardet>=5.0.0
+docx2txt>=0.8
+python-docx>=1.0.0
+
+# Text Splitting (LangChain)
+langchain-text-splitters>=0.0.1
+langchain-core>=0.1.0

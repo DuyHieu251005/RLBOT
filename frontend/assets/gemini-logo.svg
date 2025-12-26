@@ -1,0 +1,35 @@
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main star shape with gradient -->
+  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" 
+        fill="currentColor" 
+        opacity="0.3"/>
+  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" 
+        fill="url(#gemini-gradient)" 
+        fill-opacity="0.9"/>
+  
+  <!-- Inner mystical glow -->
+  <circle cx="12" cy="12" r="4" fill="url(#innerGlow)" opacity="0.4"/>
+  
+  <!-- Sparkle accents -->
+  <circle cx="12" cy="6" r="1" fill="#9D4EDD" opacity="0.8">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="18" cy="10" r="0.8" fill="#C77DFF" opacity="0.7">
+    <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="6" cy="10" r="0.8" fill="#C77DFF" opacity="0.7">
+    <animate attributeName="opacity" values="0.9;0.3;0.9" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <defs>
+    <linearGradient id="gemini-gradient" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#9D4EDD"/>
+      <stop offset="50%" stop-color="#C77DFF"/>
+      <stop offset="100%" stop-color="#7B2CBF"/>
+    </linearGradient>
+    <radialGradient id="innerGlow">
+      <stop offset="0%" stop-color="#9D4EDD" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#9D4EDD" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>

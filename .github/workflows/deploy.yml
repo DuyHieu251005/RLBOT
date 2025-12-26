@@ -1,0 +1,55 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  SERVER_HOST: ${{ secrets.SERVER_HOST }}
+  SERVER_USER: ${{ secrets.SERVER_USER }}
+  PROJECT_PATH: /home/hieukieu0543/RLBot
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to VPS
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH Key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'ENDSSH'
+            cd ${{ env.PROJECT_PATH }}
+            
+            echo "📥 Pulling latest code..."
+            git pull origin main
+            
+            echo "🔨 Rebuilding containers..."
+            docker compose -f docker-compose.prod.yml build --no-cache
+            
+            echo "🚀 Deploying containers..."
+            docker compose -f docker-compose.prod.yml up -d
+            
+            echo "🧹 Cleaning up old images..."
+            docker image prune -f
+            
+            echo "✅ Deployment complete!"
+          ENDSSH
+
+      - name: Health Check
+        run: |
+          sleep 10
+          curl -f https://mc-sv-hcmus.duckdns.org/api/health || echo "⚠️ Health check failed but deployment may still be starting"
