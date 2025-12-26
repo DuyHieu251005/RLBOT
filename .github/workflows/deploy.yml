@@ -35,6 +35,10 @@ jobs:
           export SERVER_HOST="0.0.0.0" 
           export SERVER_PORT="8000"
           export GEMINI_API_KEY="test_key"
+          export SUPABASE_URL="https://example.supabase.co"
+          export SUPABASE_ANON_KEY="test"
+          export SUPABASE_JWT_SECRET="test_secret"
+          export SUPABASE_SERVICE_ROLE_KEY="test_role_key"
           python -m pytest backend/test_main.py
 
   # JOB 2: TEST FRONTEND
