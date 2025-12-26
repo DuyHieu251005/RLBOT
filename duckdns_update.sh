@@ -3,8 +3,8 @@
 # Updates DuckDNS record with current public IP
 # Run via cron: */5 * * * * /home/hieukieu0543/RLBot/duckdns_update.sh >> /home/hieukieu0543/RLBot/duckdns.log 2>&1
 
-# Configuration - UPDATE THIS TOKEN!
-DUCKDNS_TOKEN="${DUCKDNS_TOKEN:-YOUR_DUCKDNS_TOKEN_HERE}"
+# Configuration
+DUCKDNS_TOKEN="9df3b51c-ec8f-43ec-9243-955cca3a394a"
 DUCKDNS_DOMAIN="mc-sv-hcmus"
 
 # Get current public IP
