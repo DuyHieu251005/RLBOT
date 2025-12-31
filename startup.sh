@@ -10,6 +10,10 @@ echo "[$(date)] Starting RLBot..." >> startup.log
 export PATH=$PATH:/usr/local/bin:/usr/bin
 
 # Start services
-docker compose -f docker-compose.prod.yml up -d >> startup.log 2>&1
+echo "📥 Checking for updates..." >> startup.log
+git pull origin main >> startup.log 2>&1
+    
+echo "🔨 Rebuilding containers if needed..." >> startup.log
+docker compose -f docker-compose.prod.yml up -d --build --remove-orphans >> startup.log 2>&1
 
 echo "[$(date)] RLBot startup command executed." >> startup.log
