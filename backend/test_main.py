@@ -3,6 +3,10 @@ from unittest.mock import MagicMock
 import sys
 import os
 
+# Add the backend directory to sys.path so imports work correctly
+# regardless of whether pytest is run from root or backend/
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 # Set required env vars for testing if not already set
 os.environ.setdefault("DATABASE_URL", "postgresql://user:pass@localhost:5432/db")
 os.environ.setdefault("SUPABASE_URL", "https://example.supabase.co")
