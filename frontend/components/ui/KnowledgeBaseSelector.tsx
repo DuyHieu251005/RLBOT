@@ -110,120 +110,140 @@ export function KnowledgeBaseSelector({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    setIsProcessing(true);
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const files = Array.from(e.dataTransfer.files);
+      const toastId = toast.loading(`Starting processing for ${files.length} file(s)...`);
 
       // Process files one by one to avoid memory spike
       const newFiles = [];
-      setProcessingProgress({ current: 0, total: files.length, currentFile: files[0].name });
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        setProcessingProgress({ current: i, total: files.length, currentFile: file.name });
+      try {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          toast.loading(`Processing ${i + 1}/${files.length}: ${file.name}`, { id: toastId });
 
-        // Skip files larger than 50MB to prevent memory issues
-        if (file.size > 50 * 1024 * 1024) {
-          logger.warn(`⚠️ File too large (${(file.size / 1024 / 1024).toFixed(1)}MB): ${file.name}. Max 50MB per file.`);
-          toast.error(`File "${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum 50MB per file.`);
-          continue;
+          // Skip files larger than 50MB to prevent memory issues
+          if (file.size > 50 * 1024 * 1024) {
+            logger.warn(`⚠️ File too large (${(file.size / 1024 / 1024).toFixed(1)}MB): ${file.name}. Max 50MB per file.`);
+            toast.error(`File "${file.name}" is too large. Max 50MB.`, { id: toastId });
+            // Give user time to see error before continuing
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            continue;
+          }
+
+          // Validate file extension
+          if (!validateFileExtension(file.name)) {
+            const ext = file.name.split('.').pop()?.toLowerCase() || 'unknown';
+            toast.error(`Skipped "${file.name}": Unsupported format (.${ext})`, { id: toastId });
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            continue;
+          }
+
+          let content = "";
+          try {
+            content = await readFileContent(file);
+            logger.log(`✅ Processed file: ${file.name}, content length: ${content.length}`);
+          } catch (err) {
+            logger.error("Error reading file:", file.name, err);
+            toast.error(`Failed to read "${file.name}"`, { id: toastId });
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            continue;
+          }
+
+          newFiles.push({
+            id: Date.now().toString() + Math.random(),
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            uploadedAt: new Date(),
+            content: content
+          });
+
+          // Allow browser to breathe between file processing
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
 
-        // Validate file extension
-        if (!validateFileExtension(file.name)) {
-          const ext = file.name.split('.').pop()?.toLowerCase() || 'unknown';
-          logger.warn(`⚠️ Unsupported file type: ${file.name}`);
-          toast.error(`File "${file.name}" has unsupported format (.${ext}). Allowed: PDF, DOCX, TXT`);
-          continue;
+        if (newFiles.length > 0) {
+          onFilesUpload([...uploadedFiles, ...newFiles]);
+          toast.success(`Successfully added ${newFiles.length} file(s)`, { id: toastId });
+        } else {
+          toast.dismiss(toastId);
         }
 
-        let content = "";
-        try {
-          content = await readFileContent(file);
-          logger.log(`✅ Processed file: ${file.name}, content length: ${content.length}`);
-        } catch (err) {
-          logger.error("Error reading file:", file.name, err);
-          continue;
-        }
-
-        newFiles.push({
-          id: Date.now().toString() + Math.random(),
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          uploadedAt: new Date(),
-          content: content
-        });
-
-        // Allow browser to breathe between file processing
-        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (globalError) {
+        console.error("Global processing error", globalError);
+        toast.error("An unexpected error occurred during processing", { id: toastId });
       }
-
-      onFilesUpload([...uploadedFiles, ...newFiles]);
     }
-
-    setProcessingProgress(null);
-    setIsProcessing(false);
   };
 
   const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setIsProcessing(true);
 
     if (e.target.files && e.target.files[0]) {
       const files = Array.from(e.target.files);
+      const toastId = toast.loading(`Starting processing for ${files.length} file(s)...`);
 
       // Process files one by one to avoid memory spike
       const newFiles = [];
-      setProcessingProgress({ current: 0, total: files.length, currentFile: files[0].name });
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        setProcessingProgress({ current: i, total: files.length, currentFile: file.name });
+      try {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          toast.loading(`Processing ${i + 1}/${files.length}: ${file.name}`, { id: toastId });
 
-        // Skip files larger than 50MB to prevent memory issues
-        if (file.size > 50 * 1024 * 1024) {
-          logger.warn(`⚠️ File too large (${(file.size / 1024 / 1024).toFixed(1)}MB): ${file.name}. Max 50MB per file.`);
-          toast.error(`File "${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum 50MB per file.`);
-          continue;
+          // Skip files larger than 50MB to prevent memory issues
+          if (file.size > 50 * 1024 * 1024) {
+            logger.warn(`⚠️ File too large (${(file.size / 1024 / 1024).toFixed(1)}MB): ${file.name}. Max 50MB per file.`);
+            toast.error(`File "${file.name}" is too large. Max 50MB.`, { id: toastId });
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            continue;
+          }
+
+          // Validate file extension
+          if (!validateFileExtension(file.name)) {
+            const ext = file.name.split('.').pop()?.toLowerCase() || 'unknown';
+            toast.error(`Skipped "${file.name}": Unsupported format (.${ext})`, { id: toastId });
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            continue;
+          }
+
+          let content = "";
+          try {
+            content = await readFileContent(file);
+            logger.log(`✅ Processed file: ${file.name}, content length: ${content.length}`);
+          } catch (err) {
+            logger.error("Error reading file:", file.name, err);
+            toast.error(`Failed to read "${file.name}"`, { id: toastId });
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            continue;
+          }
+
+          newFiles.push({
+            id: Date.now().toString() + Math.random(),
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            uploadedAt: new Date(),
+            content: content
+          });
+
+          // Allow browser to breathe between file processing
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
 
-        // Validate file extension
-        if (!validateFileExtension(file.name)) {
-          const ext = file.name.split('.').pop()?.toLowerCase() || 'unknown';
-          logger.warn(`⚠️ Unsupported file type: ${file.name}`);
-          toast.error(`File "${file.name}" has unsupported format (.${ext}). Allowed: PDF, DOCX, TXT`);
-          continue;
+        if (newFiles.length > 0) {
+          onFilesUpload([...uploadedFiles, ...newFiles]);
+          toast.success(`Successfully added ${newFiles.length} file(s)`, { id: toastId });
+        } else {
+          toast.dismiss(toastId);
         }
-
-        let content = "";
-        try {
-          content = await readFileContent(file);
-          logger.log(`✅ Processed file: ${file.name}, content length: ${content.length}`);
-        } catch (err) {
-          logger.error("Error reading file:", file.name, err);
-          continue;
-        }
-
-        newFiles.push({
-          id: Date.now().toString() + Math.random(),
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          uploadedAt: new Date(),
-          content: content
-        });
-
-        // Allow browser to breathe between file processing
-        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (globalError) {
+        console.error("Global processing error", globalError);
+        toast.error("An unexpected error occurred during processing", { id: toastId });
       }
-
-      onFilesUpload([...uploadedFiles, ...newFiles]);
     }
-
-    setProcessingProgress(null);
-    setIsProcessing(false);
   };
 
   const toggleKB = (kbId: string) => {
@@ -240,14 +260,7 @@ export function KnowledgeBaseSelector({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold ancient-rune">
-          Knowledge Base (Optional)
-        </label>
-        <p className="text-xs text-[#5A4635] italic" style={{ fontFamily: "Noto Serif, serif" }}>
-          Attach knowledge bases or upload files for RAG context
-        </p>
-      </div>
+
 
       {/* Knowledge Base Selection */}
       <div className="space-y-2">
@@ -414,36 +427,13 @@ export function KnowledgeBaseSelector({
           </div>
 
           <p className="text-sm text-[#E8DCC8] font-medium mb-1 weathered-text">
-            {isProcessing ? "Processing files..." : "Click or drag files here"}
+            Click or drag files here
           </p>
           <p className="text-[10px] text-[#5A4635]">
             Supported: PDF, DOCX, TXT
           </p>
-          {isProcessing && processingProgress && (
-            <div className="mt-3 w-full px-4">
-              <div className="flex items-center gap-2 text-[#9D4EDD] mb-2">
-                <div className="w-4 h-4 border-2 border-[#9D4EDD] border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-xs truncate max-w-[200px]">
-                  Processing: {processingProgress.currentFile}
-                </span>
-              </div>
-              <div className="bg-[#2A1B35] h-2 rounded-full overflow-hidden">
-                <div
-                  className="bg-gradient-to-r from-[#9D4EDD] to-[#C77DFF] h-full transition-all duration-300"
-                  style={{ width: `${((processingProgress.current + 1) / processingProgress.total) * 100}%` }}
-                />
-              </div>
-              <p className="text-[10px] text-[#5A4635] mt-1 text-center">
-                {processingProgress.current + 1} of {processingProgress.total}
-              </p>
-            </div>
-          )}
-          {isProcessing && !processingProgress && (
-            <div className="mt-2 flex items-center gap-2 text-[#9D4EDD]">
-              <div className="w-4 h-4 border-2 border-[#9D4EDD] border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-xs">Preparing...</span>
-            </div>
-          )}
+
+
         </div>
 
         {/* Uploaded Files List */}
