@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { inviteUserToGroup } from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
+import { BaseModal, ModalFooter } from "./ui/BaseModal";
 
 interface GroupsProps {
   groups: GroupData[];
@@ -102,7 +103,7 @@ export function Groups({ groups, onCreateGroup, onDeleteGroup, isAuthenticated }
               className="text-4xl font-black text-white tracking-tight mb-2"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              GUILD <span className="text-[#9D4EDD]">MANAGEMENT</span>
+              GROUP <span className="text-[#9D4EDD]">MANAGEMENT</span>
             </motion.h1>
             <p className="text-white/40 text-sm font-bold uppercase tracking-widest">Organize your circles and shared intelligence</p>
           </div>
@@ -112,7 +113,7 @@ export function Groups({ groups, onCreateGroup, onDeleteGroup, isAuthenticated }
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
               <input
                 type="text"
-                placeholder="Search guilds..."
+                placeholder="Search groups..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/20 focus:border-[#9D4EDD] focus:outline-none transition-all"
@@ -123,7 +124,7 @@ export function Groups({ groups, onCreateGroup, onDeleteGroup, isAuthenticated }
               className="px-6 py-2.5 bg-[#9D4EDD] hover:bg-[#7B2CBF] text-white rounded-xl font-bold transition-all flex items-center gap-2 shadow-[0_4px_15px_rgba(157,78,221,0.3)]"
             >
               <Plus className="w-4 h-4" />
-              CREATE GUILD
+              CREATE GROUP
             </Button>
           </div>
         </div>
@@ -197,110 +198,97 @@ export function Groups({ groups, onCreateGroup, onDeleteGroup, isAuthenticated }
       </div>
 
       {/* Create Group Modal */}
-      <AnimatePresence>
-        {isCreating && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#1A1A1A] border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl"
-            >
-              <div className="p-8 border-b border-white/5 flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-black text-white tracking-tighter" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                    NEW <span className="text-[#9D4EDD]">GUILD</span>
-                  </h2>
-                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Establish a new center of intelligence</p>
-                </div>
-                <button
-                  onClick={() => setIsCreating(false)}
-                  className="p-2 text-white/20 hover:text-white hover:bg-white/5 rounded-xl transition-all"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+      <BaseModal
+        isOpen={isCreating}
+        onClose={() => setIsCreating(false)}
+        title={
+          <span>
+            NEW <span className="text-[#9D4EDD]">GROUP</span>
+          </span>
+        }
+        description="Establish a new center of intelligence"
+      >
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest px-1">Group Name</label>
+            <input
+              type="text"
+              placeholder="Enter group name..."
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              className="w-full px-4 py-3 bg-[#0F0F0F] border border-[#5A4635] rounded-lg text-[#E8DCC8] placeholder-[#5A4635] focus:border-[#9D4EDD] focus:outline-none transition-all"
+            />
+          </div>
 
-              <div className="p-8 space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/40 uppercase tracking-widest px-1">Guild Name</label>
-                  <input
-                    type="text"
-                    placeholder="Enter guild name..."
-                    value={newGroupName}
-                    onChange={(e) => setNewGroupName(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/20 focus:border-[#9D4EDD] focus:outline-none transition-all"
-                  />
-                </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest px-1">Description</label>
+            <textarea
+              placeholder="What is this group's purpose?"
+              value={newGroupDescription}
+              onChange={(e) => setNewGroupDescription(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-3 bg-[#0F0F0F] border border-[#5A4635] rounded-lg text-[#E8DCC8] placeholder-[#5A4635] focus:border-[#9D4EDD] focus:outline-none transition-all resize-none"
+            />
+          </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/40 uppercase tracking-widest px-1">Description</label>
-                  <textarea
-                    placeholder="What is this guild's purpose?"
-                    value={newGroupDescription}
-                    onChange={(e) => setNewGroupDescription(e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/20 focus:border-[#9D4EDD] focus:outline-none transition-all resize-none"
-                  />
-                </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest px-1">Invite Members</label>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                placeholder="user@example.com"
+                value={memberEmailInput}
+                onChange={(e) => setMemberEmailInput(e.target.value)}
+                className="flex-1 px-4 py-3 bg-[#0F0F0F] border border-[#5A4635] rounded-lg text-[#E8DCC8] placeholder-[#5A4635] focus:border-[#9D4EDD] focus:outline-none transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const email = memberEmailInput.trim();
+                  if (email && !newGroupMembers.includes(email) && email !== user?.email) {
+                    setNewGroupMembers(prev => [...prev, email]);
+                    setMemberEmailInput("");
+                  }
+                }}
+                className="px-4 bg-[#9D4EDD]/10 border border-[#9D4EDD]/30 text-[#9D4EDD] rounded-lg font-bold hover:bg-[#9D4EDD]/20 transition-all"
+              >
+                ADD
+              </button>
+            </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/40 uppercase tracking-widest px-1">Invite Members</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="email"
-                      placeholder="summoner@arcanum.io"
-                      value={memberEmailInput}
-                      onChange={(e) => setMemberEmailInput(e.target.value)}
-                      className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/20 focus:border-[#9D4EDD] focus:outline-none transition-all"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const email = memberEmailInput.trim();
-                        if (email && !newGroupMembers.includes(email) && email !== user?.email) {
-                          setNewGroupMembers(prev => [...prev, email]);
-                          setMemberEmailInput("");
-                        }
-                      }}
-                      className="px-4 bg-[#9D4EDD]/10 border border-[#9D4EDD]/30 text-[#9D4EDD] rounded-xl font-bold hover:bg-[#9D4EDD]/20 transition-all"
+            {newGroupMembers.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {newGroupMembers.map((email, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-[#9D4EDD]/10 border border-[#9D4EDD]/20 text-[#E8DCC8] px-3 py-1 rounded-lg text-xs">
+                    <span className="truncate max-w-[120px]">{email}</span>
+                    <button onClick={() => setNewGroupMembers(prev => prev.filter((_, i) => i !== idx))}
+                      className="hover:text-red-400 transition-colors"
                     >
-                      ADD
+                      <X size={12} />
                     </button>
                   </div>
-
-                  {newGroupMembers.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {newGroupMembers.map((email, idx) => (
-                        <div key={idx} className="flex items-center gap-2 bg-[#9D4EDD]/10 border border-[#9D4EDD]/20 text-white/80 px-3 py-1 rounded-lg text-xs">
-                          <span className="truncate max-w-[120px]">{email}</span>
-                          <button onClick={() => setNewGroupMembers(prev => prev.filter((_, i) => i !== idx))}><X size={12} /></button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                ))}
               </div>
-
-              <div className="p-8 border-t border-white/5 flex gap-3">
-                <button
-                  onClick={() => setIsCreating(false)}
-                  className="flex-1 py-3 border border-white/10 text-white/40 rounded-xl font-bold hover:bg-white/5 hover:text-white transition-all"
-                >
-                  ABORT
-                </button>
-                <button
-                  onClick={handleCreateGroup}
-                  disabled={!newGroupName.trim()}
-                  className="flex-1 py-3 bg-[#9D4EDD] text-white rounded-xl font-bold hover:bg-[#7B2CBF] transition-all disabled:opacity-30 shadow-[0_4px_15px_rgba(157,78,221,0.3)]"
-                >
-                  ESTABLISH
-                </button>
-              </div>
-            </motion.div>
+            )}
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+
+        <ModalFooter>
+          <button
+            onClick={() => setIsCreating(false)}
+            className="flex-1 py-2.5 border border-[#5A4635] text-[#9B9380] rounded-lg font-bold hover:bg-[#2B2B2B] hover:text-[#E8DCC8] transition-all"
+          >
+            ABORT
+          </button>
+          <button
+            onClick={handleCreateGroup}
+            disabled={!newGroupName.trim()}
+            className="flex-1 py-2.5 bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 rounded-lg font-bold hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all disabled:opacity-30 shadow-[0_0_15px_rgba(157,78,221,0.15)]"
+          >
+            ESTABLISH
+          </button>
+        </ModalFooter>
+      </BaseModal>
 
       {selectedGroup && (
         <GroupDrawer

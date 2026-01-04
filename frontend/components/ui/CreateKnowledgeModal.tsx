@@ -1,13 +1,14 @@
 import { useState, useRef, DragEvent, ChangeEvent, useEffect } from "react";
 import {
-  X,
   Upload,
   FileText,
   Trash2,
   CheckCircle2,
   AlertCircle,
   Loader2,
+  BookOpen
 } from "lucide-react";
+import { BaseModal, ModalFooter } from "./BaseModal";
 import { KnowledgeBaseData } from "../../types";
 import {
   uploadPDFToBackend,
@@ -356,8 +357,8 @@ export function CreateKnowledgeModal({
 
   // Upload Progress Overlay (Full screen blocker during file processing)
   const UploadProgressOverlay = uploadProgress && (
-    <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center backdrop-blur-sm">
-      <div className="bg-[#1a1a1a] border border-[#5A4635] p-8 rounded-lg text-center max-w-md w-full mx-4 shadow-2xl">
+    <div className="fixed inset-0 z-[110] bg-black/90 flex items-center justify-center backdrop-blur-sm">
+      <div className="bg-[#1a1a1a] border border-[#5A4635] p-8 rounded-xl text-center max-w-md w-full mx-4 shadow-2xl">
         <Loader2 className="w-16 h-16 text-[#9D4EDD] animate-spin mx-auto mb-6" />
         <h3 className="text-[#E8DCC8] text-xl font-bold mb-2">Processing Files...</h3>
         <p className="text-[#9B9380] text-sm mb-1">
@@ -383,50 +384,41 @@ export function CreateKnowledgeModal({
     <>
       {UploadProgressOverlay}
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-        <div className="bg-[#1a1a1a] border border-[#5A4635] rounded-lg w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.7)] overflow-hidden flex flex-col max-h-[90vh] relative">
-          <div className="absolute top-2 left-2 text-[#5A4635] opacity-30 text-xs">
-            ◈
-          </div>
-          <div className="absolute top-2 right-2 text-[#5A4635] opacity-30 text-xs">
-            ◈
-          </div>
-
-          <div className="px-6 py-5 border-b border-[#5A4635] flex justify-between items-center bg-[#151515]">
-            <h3
-              className="text-lg font-bold text-[#E8DCC8] weathered-text tracking-wide"
-              style={{ fontFamily: "Merriweather, serif" }}
-            >
-              {editingKB ? "Edit Knowledge Base" : "Create Knowledge Base"}
-            </h3>
-            <button
-              onClick={onClose}
-              className="text-[#9B9380] hover:text-[#9D4EDD] transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+        <BaseModal
+          isOpen={isOpen}
+          onClose={onClose}
+          title={
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#2A1B35] border border-[#9D4EDD]/50 flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-[#9D4EDD]" />
+              </div>
+              <span>{editingKB ? "EDIT KNOWLEDGE BASE" : "CREATE NEW KNOWLEDGE BASE"}</span>
+            </div>
+          }
+          description="Upload documents to train your AI assistant."
+          maxWidth="max-w-lg"
+        >
+          <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
+              <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest px-1">
                 Knowledge Base Name
               </label>
               <input
                 type="text"
                 value={kbName}
                 onChange={(e) => setKbName(e.target.value)}
-                className="w-full bg-[#0F0F0F] border border-[#5A4635] p-3 text-[#E8DCC8] focus:border-[#9D4EDD] focus:outline-none rounded-sm placeholder-[#4A3B2A] transition-colors"
+                className="w-full bg-[#0F0F0F] border border-[#5A4635] p-3 text-[#E8DCC8] focus:border-[#9D4EDD] focus:outline-none rounded-xl placeholder-[#5A4635] transition-colors"
                 placeholder="e.g. Server Rules v1.0"
                 style={{ fontFamily: "Noto Serif, serif" }}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
+              <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest px-1">
                 Upload Source Files
               </label>
               <div
-                className={`relative border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group
+                className={`relative border-dashed border-2 rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group
                   ${dragActive
                     ? "border-[#9D4EDD] bg-[#9D4EDD]/10"
                     : "border-[#5A4635] bg-[#0F0F0F] hover:border-[#9B9380]"
@@ -465,11 +457,11 @@ export function CreateKnowledgeModal({
 
             {existingFiles.length > 0 && (
               <div className="space-y-2 mb-4 animate-in slide-in-from-bottom-2">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
+                <div className="flex justify-between items-center px-1">
+                  <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest">
                     Existing Files (Synced)
                   </label>
-                  <span className="text-xs text-[#9D4EDD]">
+                  <span className="text-[10px] text-[#9D4EDD] font-bold">
                     {existingFiles.length} files
                   </span>
                 </div>
@@ -477,7 +469,7 @@ export function CreateKnowledgeModal({
                   {existingFiles.map((file, idx) => (
                     <div
                       key={`existing-${idx}`}
-                      className="group flex items-center justify-between p-3 bg-[#1F1F1F] border border-[#5A4635]/50 rounded-sm hover:border-[#9D4EDD]/30 transition-all"
+                      className="group flex items-center justify-between p-3 bg-[#1F1F1F] border border-[#5A4635]/50 rounded-xl hover:border-[#9D4EDD]/30 transition-all"
                     >
                       <div className="flex items-center gap-3 overflow-hidden">
                         {file.status === "completed" && (
@@ -509,7 +501,7 @@ export function CreateKnowledgeModal({
                       <button
                         onClick={() => handleDeleteExistingFile(file.filename)}
                         disabled={deletingFile === file.filename}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 text-[#5A4635] hover:text-red-400 hover:bg-red-400/10 rounded transition-all disabled:opacity-50"
+                        className="opacity-0 group-hover:opacity-100 p-1.5 text-[#5A4635] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all disabled:opacity-50"
                         title="Delete file from knowledge base"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -522,11 +514,11 @@ export function CreateKnowledgeModal({
 
             {files.length > 0 && (
               <div className="space-y-2 animate-in slide-in-from-bottom-2">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
+                <div className="flex justify-between items-center px-1">
+                  <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest">
                     Selected Files
                   </label>
-                  <span className="text-xs text-[#9D4EDD]">
+                  <span className="text-[10px] text-[#9D4EDD] font-bold">
                     {files.length} files ready
                   </span>
                 </div>
@@ -534,7 +526,7 @@ export function CreateKnowledgeModal({
                   {files.map((file, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-3 bg-[#1F1F1F] border border-[#5A4635]/50 rounded-sm"
+                      className="flex items-center justify-between p-3 bg-[#1F1F1F] border border-[#5A4635]/50 rounded-xl"
                     >
                       <div className="flex items-center gap-3 overflow-hidden">
                         <FileText className="w-4 h-4 text-[#9D4EDD] flex-shrink-0" />
@@ -549,7 +541,7 @@ export function CreateKnowledgeModal({
                       </div>
                       <button
                         onClick={() => removeFile(idx)}
-                        className="p-1.5 text-[#5A4635] hover:text-red-400 hover:bg-red-400/10 rounded transition-colors"
+                        className="p-1.5 text-[#5A4635] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -560,22 +552,22 @@ export function CreateKnowledgeModal({
             )}
           </div>
 
-          <div className="px-6 py-4 bg-[#151515] border-t border-[#5A4635] flex justify-end gap-3">
+          <ModalFooter>
             <button
               onClick={onClose}
               disabled={isProcessing || uploadProgress !== null}
-              className="px-4 py-2 rounded-sm text-[#9B9380] hover:text-[#E8DCC8] hover:bg-[#2B2B2B] transition-colors font-medium text-sm weathered-text disabled:opacity-50"
+              className="flex-1 py-3 border border-[#5A4635] text-[#9B9380] rounded-xl font-bold hover:bg-[#2B2B2B] hover:text-[#E8DCC8] transition-all disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               onClick={handleCreate}
               disabled={isProcessing || !kbName.trim() || uploadProgress !== null}
-              className="px-5 py-2 rounded-sm bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all shadow-[0_0_15px_rgba(157,78,221,0.15)] font-bold text-sm tracking-wide weathered-text flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 rounded-xl font-bold hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all shadow-[0_0_15px_rgba(157,78,221,0.15)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isProcessing ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-[#9D4EDD] border-t-transparent rounded-full animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   Processing...
                 </>
               ) : (
@@ -585,8 +577,8 @@ export function CreateKnowledgeModal({
                 </>
               )}
             </button>
-          </div>
-        </div>
+          </ModalFooter>
+        </BaseModal>
       </div>
     </>
   );
