@@ -1,9 +1,3 @@
-"""
-AI Service Module - Supports multiple AI providers
-- Gemini (Google)
-- OpenRouter (Multiple models)
-"""
-
 import httpx
 from typing import Optional, List, Literal
 import google.generativeai as genai
@@ -17,13 +11,11 @@ AIProvider = Literal["gemini", "openrouter"]
 
 
 class AIService:
-    """Unified AI service supporting multiple providers"""
     
     def __init__(self):
         self.default_provider = settings.DEFAULT_AI_PROVIDER
         
     def get_available_providers(self) -> List[str]:
-        """Get list of available AI providers"""
         return settings.get_available_providers()
     
     async def generate_response(
@@ -34,8 +26,6 @@ class AIService:
         provider: Optional[AIProvider] = None
     ) -> str:
         """
-        Generate AI response using specified provider
-        
         Args:
             prompt: User's question/prompt
             system_instructions: System prompt for the AI
@@ -66,16 +56,13 @@ Please answer based on the context above."""
         prompt: str,
         system_instructions: Optional[str] = None
     ) -> str:
-        """Generate response using Gemini"""
         if not settings.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY is not configured")
         
-        # Validate prompt
         if not prompt or not prompt.strip():
             raise ValueError("Prompt cannot be empty")
         
         try:
-            # Only pass system_instruction if it has a non-empty value
             model_kwargs = {"model_name": settings.GEMINI_MODEL}
             if system_instructions and system_instructions.strip():
                 model_kwargs["system_instruction"] = system_instructions.strip()
@@ -86,7 +73,7 @@ Please answer based on the context above."""
             return response.text
             
         except Exception as e:
-            print(f"❌ Gemini error: {e}")
+            print(f"Gemini error: {e}")
             raise
     
     async def _generate_openrouter(
@@ -94,7 +81,6 @@ Please answer based on the context above."""
         prompt: str,
         system_instructions: Optional[str] = None
     ) -> str:
-        """Generate response using OpenRouter API"""
         if not settings.OPENROUTER_API_KEY:
             raise ValueError("OPENROUTER_API_KEY is not configured")
         
@@ -134,7 +120,7 @@ Please answer based on the context above."""
                 
                 if response.status_code != 200:
                     error_detail = response.text
-                    print(f"❌ OpenRouter error: {response.status_code} - {error_detail}")
+                    print(f"OpenRouter error: {response.status_code} - {error_detail}")
                     raise Exception(f"OpenRouter API error: {response.status_code}")
                 
                 data = response.json()
@@ -143,7 +129,7 @@ Please answer based on the context above."""
         except httpx.TimeoutException:
             raise Exception("OpenRouter request timed out")
         except Exception as e:
-            print(f"❌ OpenRouter error: {e}")
+            print(f"OpenRouter error: {e}")
             raise
 
     async def generate_response_stream(
@@ -183,16 +169,13 @@ Please answer based on the context above. Format your response with clear struct
         prompt: str,
         system_instructions: Optional[str] = None
     ):
-        """Stream response from Gemini"""
         if not settings.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY is not configured")
         
-        # Validate prompt
         if not prompt or not prompt.strip():
             raise ValueError("Prompt cannot be empty")
         
         try:
-            # Only pass system_instruction if it has a non-empty value
             model_kwargs = {"model_name": settings.GEMINI_MODEL}
             if system_instructions and system_instructions.strip():
                 model_kwargs["system_instruction"] = system_instructions.strip()
@@ -205,7 +188,7 @@ Please answer based on the context above. Format your response with clear struct
                     yield chunk.text
                     
         except Exception as e:
-            print(f"❌ Gemini streaming error: {e}")
+            print(f"Gemini streaming error: {e}")
             raise
 
     async def _stream_openrouter(
@@ -213,7 +196,6 @@ Please answer based on the context above. Format your response with clear struct
         prompt: str,
         system_instructions: Optional[str] = None
     ):
-        """Stream response from OpenRouter"""
         if not settings.OPENROUTER_API_KEY:
             raise ValueError("OPENROUTER_API_KEY is not configured")
         
@@ -258,7 +240,7 @@ Please answer based on the context above. Format your response with clear struct
                                 pass
                                 
         except Exception as e:
-            print(f"❌ OpenRouter streaming error: {e}")
+            print(f"OpenRouter streaming error: {e}")
             raise
 
 
