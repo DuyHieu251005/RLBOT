@@ -1,9 +1,3 @@
-"""
-Supabase Auth Verification Module
-Verifies JWT tokens issued by Supabase Auth
-Also provides user lookup by email via Admin API
-"""
-
 from datetime import datetime
 from functools import lru_cache
 from typing import Dict, Optional
@@ -15,7 +9,6 @@ from fastapi import Header, HTTPException
 
 
 def get_supabase_service_role_key() -> str:
-    """Get Supabase Service Role Key from environment"""
     key = (
         settings.SUPABASE_SERVICE_ROLE_KEY
         if hasattr(settings, "SUPABASE_SERVICE_ROLE_KEY")
@@ -32,14 +25,12 @@ def get_supabase_service_role_key() -> str:
 _http_client: Optional[httpx.AsyncClient] = None
 
 def get_http_client() -> httpx.AsyncClient:
-    """Get or create global AsyncClient"""
     global _http_client
     if _http_client is None or _http_client.is_closed:
         _http_client = httpx.AsyncClient(timeout=30.0)
     return _http_client
 
 async def close_http_client():
-    """Close global AsyncClient"""
     global _http_client
     if _http_client and not _http_client.is_closed:
         await _http_client.aclose()
@@ -47,11 +38,6 @@ async def close_http_client():
 
 async def lookup_user_by_email(email: str) -> Optional[Dict]:
     """
-    Lookup a Supabase user by email using Admin API
-    
-    Args:
-        email: User's email address
-        
     Returns:
         Dict with user info: {"id": "uuid", "email": "email"}
         or None if not found
@@ -60,7 +46,6 @@ async def lookup_user_by_email(email: str) -> Optional[Dict]:
         supabase_url = get_supabase_url()
         service_key = get_supabase_service_role_key()
         
-        # Supabase Admin API endpoint to list users
         admin_url = f"{supabase_url}/auth/v1/admin/users"
         
         client = get_http_client()
@@ -76,7 +61,6 @@ async def lookup_user_by_email(email: str) -> Optional[Dict]:
             data = response.json()
             users = data.get("users", [])
             
-            # Find exact match (case-insensitive)
             for user in users:
                 user_email = user.get("email", "")
                 if user_email.lower() == email.lower():
@@ -97,11 +81,6 @@ async def lookup_user_by_email(email: str) -> Optional[Dict]:
 
 async def lookup_user_by_id(user_id: str) -> Optional[Dict]:
     """
-    Lookup a Supabase user by user_id (UUID) using Admin API
-    
-    Args:
-        user_id: User's UUID from Supabase Auth
-        
     Returns:
         Dict with user info: {"id": "uuid", "email": "email", "name": "name"}
         or None if not found
@@ -110,7 +89,6 @@ async def lookup_user_by_id(user_id: str) -> Optional[Dict]:
         supabase_url = get_supabase_url()
         service_key = get_supabase_service_role_key()
         
-        # Supabase Admin API endpoint to get single user by ID
         admin_url = f"{supabase_url}/auth/v1/admin/users/{user_id}"
         
         client = get_http_client()
@@ -139,15 +117,6 @@ async def lookup_user_by_id(user_id: str) -> Optional[Dict]:
 
 async def lookup_users_batch(user_ids: list[str]) -> Dict[str, Dict]:
     """
-    Batch lookup multiple Supabase users by IDs using parallel requests
-    
-    This is MUCH faster than calling lookup_user_by_id sequentially:
-    - 10 users sequentially: ~2-3 seconds
-    - 10 users in parallel: ~200-400ms
-    
-    Args:
-        user_ids: List of user UUIDs to lookup
-        
     Returns:
         Dict mapping user_id -> {id, email, name} or user_id -> user_id (fallback)
     """
@@ -156,11 +125,9 @@ async def lookup_users_batch(user_ids: list[str]) -> Dict[str, Dict]:
     if not user_ids:
         return {}
     
-    # Remove duplicates while preserving order
     unique_ids = list(dict.fromkeys(user_ids))
     
     async def lookup_single(uid: str) -> tuple[str, Dict]:
-        """Lookup single user and return (uid, result)"""
         try:
             result = await lookup_user_by_id(uid)
             if result and result.get("email"):
@@ -170,13 +137,10 @@ async def lookup_users_batch(user_ids: list[str]) -> Dict[str, Dict]:
         except Exception:
             return (uid, {"id": uid, "email": uid, "name": None})
     
-    # Execute all lookups in parallel
     results = await asyncio.gather(*[lookup_single(uid) for uid in unique_ids])
     
-    # Convert to dict
     return {uid: info for uid, info in results}
 def get_supabase_jwt_secret() -> str:
-    """Get Supabase JWT secret from environment"""
     secret = (
         settings.SUPABASE_JWT_SECRET
         if hasattr(settings, "SUPABASE_JWT_SECRET")
@@ -191,7 +155,6 @@ def get_supabase_jwt_secret() -> str:
 
 @lru_cache()
 def get_supabase_url() -> str:
-    """Get Supabase URL from environment"""
     url = settings.SUPABASE_URL if hasattr(settings, "SUPABASE_URL") else None
     if not url:
         raise ValueError("SUPABASE_URL is not configured in environment variables")
@@ -200,11 +163,6 @@ def get_supabase_url() -> str:
 
 def verify_supabase_token(token: str) -> Dict:
     """
-    Verify Supabase JWT token and return user payload
-
-    Args:
-        token: JWT access token from Supabase
-
     Returns:
         Dict with user info: {
             "id": "user-uuid",
@@ -218,10 +176,8 @@ def verify_supabase_token(token: str) -> Dict:
         HTTPException: If token is invalid or expired
     """
     try:
-        # Get JWT secret
         jwt_secret = get_supabase_jwt_secret()
 
-        # Decode and verify token
         payload = jwt.decode(
             token,
             jwt_secret,
@@ -234,9 +190,8 @@ def verify_supabase_token(token: str) -> Dict:
             },
         )
 
-        # Extract user information
         user_info = {
-            "id": payload.get("sub"),  # User ID
+            "id": payload.get("sub"),
             "email": payload.get("email"),
             "name": payload.get("user_metadata", {}).get("name")
             or payload.get("email", "").split("@")[0],
@@ -244,7 +199,6 @@ def verify_supabase_token(token: str) -> Dict:
             "role": payload.get("role"),
         }
 
-        # Validate required fields
         if not user_info["id"] or not user_info["email"]:
             raise ValueError("Token missing required user information")
 
@@ -257,22 +211,12 @@ def verify_supabase_token(token: str) -> Dict:
     except jwt.InvalidTokenError as e:
         raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
     except Exception as e:
-        print(f"❌ Token verification error: {e}")
+        print(f"Token verification error: {e}")
         raise HTTPException(status_code=401, detail="Token verification failed")
 
 
 async def get_current_user_supabase(authorization: str = Header(None)) -> Dict:
     """
-    FastAPI dependency to get current authenticated user from Supabase token
-
-    Usage:
-        @app.get("/protected")
-        async def protected_route(user: dict = Depends(get_current_user_supabase)):
-            return {"user_id": user["id"], "email": user["email"]}
-
-    Args:
-        authorization: Authorization header with Bearer token
-
     Returns:
         Dict with user info
 
@@ -306,7 +250,6 @@ async def get_current_user_supabase(authorization: str = Header(None)) -> Dict:
     if settings.DEBUG:
         print(f"[AUTH DEBUG] Token extracted: {token[:30]}...")
 
-    # Verify token and return user info
     user_info = verify_supabase_token(token)
     if settings.DEBUG:
         print(f"[AUTH DEBUG] Token verified! User: {user_info.get('email')}")
@@ -316,10 +259,6 @@ async def get_current_user_supabase(authorization: str = Header(None)) -> Dict:
 
 
 def verify_supabase_token_optional(token: Optional[str]) -> Optional[Dict]:
-    """
-    Verify token but return None instead of raising exception if invalid
-    Useful for optional authentication
-    """
     if not token:
         return None
 
@@ -328,5 +267,5 @@ def verify_supabase_token_optional(token: Optional[str]) -> Optional[Dict]:
     except HTTPException:
         return None
     except Exception as e:
-        print(f"⚠️ Optional token verification failed: {e}")
+        print(f"Optional token verification failed: {e}")
         return None
