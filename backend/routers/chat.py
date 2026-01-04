@@ -94,7 +94,6 @@ async def get_user_chat_sessions(user_id: str, session: DbSession = Depends(get_
 async def get_session_messages_endpoint(
     session_id: str, session: DbSession = Depends(get_db)
 ):
-    """Get all messages for a specific chat session"""
     messages = get_session_messages(session, session_id)
     return [
         {
@@ -112,7 +111,6 @@ async def add_message_to_session(
     message_data: MessageAdd,
     session: DbSession = Depends(get_db),
 ):
-    """Add a single message to an existing chat session (Append-only, optimized)"""
     # Verify session exists
     chat_session = (
         session.query(ChatSession).filter(ChatSession.id == session_id).first()
@@ -141,7 +139,6 @@ async def update_chat_session(
     session_data: ChatSessionUpdate,
     session: DbSession = Depends(get_db),
 ):
-    """Update a chat session"""
     chat_session = (
         session.query(ChatSession).filter(ChatSession.id == session_id).first()
     )
@@ -177,7 +174,6 @@ async def update_chat_session(
 
 @router.delete("/{session_id}")
 async def delete_chat_session(session_id: str, session: DbSession = Depends(get_db)):
-    """Delete a chat session"""
     chat_session = (
         session.query(ChatSession).filter(ChatSession.id == session_id).first()
     )

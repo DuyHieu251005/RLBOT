@@ -1,7 +1,3 @@
-"""
-FastAPI Backend Server for RAG System
-"""
-
 import traceback
 from contextlib import asynccontextmanager
 

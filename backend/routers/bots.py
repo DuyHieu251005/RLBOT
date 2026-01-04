@@ -1,6 +1,3 @@
-"""
-Bots Router - All endpoints secured with authentication and ownership verification
-"""
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session as DbSession
@@ -40,7 +37,7 @@ router = APIRouter(prefix="/api")
 
 def verify_bot_access(session: DbSession, bot_id: str, user_id: str, require_owner: bool = False) -> Bot:
     """
-    Verify user has access to a bot.
+    Args:
     - require_owner=True: Only bot owner can access
     - require_owner=False: Owner OR shared users can access
     Returns the bot if access is granted, raises HTTPException otherwise.

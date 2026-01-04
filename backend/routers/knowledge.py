@@ -1,6 +1,3 @@
-"""
-Knowledge Base Router - All endpoints secured with authentication and ownership verification
-"""
 import logging
 import shutil
 import tempfile
@@ -22,7 +19,6 @@ router = APIRouter(prefix="/api")
 
 
 def verify_kb_ownership(session: DbSession, kb_id: str, user_id: str) -> KnowledgeBase:
-    """Verify user owns the knowledge base. Returns KB if owned, raises HTTPException otherwise."""
     kb = session.query(KnowledgeBase).filter(KnowledgeBase.id == kb_id).first()
     if not kb:
         raise HTTPException(status_code=404, detail="Knowledge base not found")
@@ -32,7 +28,6 @@ def verify_kb_ownership(session: DbSession, kb_id: str, user_id: str) -> Knowled
 
 
 def verify_bot_ownership(session: DbSession, bot_id: str, user_id: str) -> Bot:
-    """Verify user owns the bot. Returns Bot if owned, raises HTTPException otherwise."""
     bot = session.query(Bot).filter(Bot.id == bot_id).first()
     if not bot:
         raise HTTPException(status_code=404, detail="Bot not found")
@@ -48,7 +43,6 @@ async def create_knowledge_base(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Create a new knowledge base for a user - authenticated"""
     # Verify user is creating KB for themselves
     if user_id != user_session["id"]:
         raise HTTPException(status_code=403, detail="Cannot create knowledge base for another user")
@@ -82,7 +76,6 @@ async def list_knowledge_bases(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """List knowledge bases owned by a user - authenticated"""
     # Verify user is accessing their own KBs
     if user_id != user_session["id"]:
         raise HTTPException(status_code=403, detail="Cannot access another user's knowledge bases")
@@ -110,7 +103,6 @@ async def update_knowledge_base(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Update a knowledge base - authenticated, owner only"""
     # Verify user is updating their own KB
     if user_id != user_session["id"]:
         raise HTTPException(status_code=403, detail="Cannot update another user's knowledge base")
@@ -133,7 +125,6 @@ async def delete_knowledge_base(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Delete a knowledge base and all its chunks - authenticated, owner only"""
     # Verify user is deleting their own KB
     if user_id != user_session["id"]:
         raise HTTPException(status_code=403, detail="Cannot delete another user's knowledge base")
@@ -154,7 +145,6 @@ async def upload_file_to_kb(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Upload a file to a knowledge base - authenticated, owner only"""
     # Verify KB ownership
     kb = verify_kb_ownership(session, kb_id, user_session["id"])
     
@@ -275,7 +265,6 @@ async def upload_file_to_bot(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Upload a file directly to a Bot - authenticated, owner only"""
     # Verify Bot ownership
     bot = verify_bot_ownership(session, bot_id, user_session["id"])
 
@@ -372,7 +361,6 @@ async def get_bot_files(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Get all files uploaded directly to a Bot - authenticated, owner only"""
     # Verify Bot ownership
     bot = verify_bot_ownership(session, bot_id, user_session["id"])
     
@@ -396,7 +384,6 @@ async def get_kb_files(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Get all files in a knowledge base - authenticated, owner only"""
     # Verify KB ownership
     kb = verify_kb_ownership(session, kb_id, user_session["id"])
 
@@ -432,7 +419,6 @@ async def get_kb_sample_chunks(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Get sample chunks from KB for prompt generation - authenticated, owner only"""
     # Verify KB ownership
     kb = verify_kb_ownership(session, kb_id, user_session["id"])
 
@@ -466,7 +452,6 @@ async def delete_file_by_id(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Delete a file and its chunks by file ID - authenticated, owner only"""
     file_record = session.query(File).filter(File.id == file_id).first()
     if not file_record:
         raise HTTPException(status_code=404, detail="File not found")
@@ -507,7 +492,6 @@ async def delete_file_from_kb(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Delete a specific file from a knowledge base - authenticated, owner only"""
     # Verify KB ownership
     kb = verify_kb_ownership(session, kb_id, user_session["id"])
 
@@ -544,7 +528,6 @@ async def upload_text_directly(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Upload raw text directly - authenticated, owner only"""
     # Verify KB ownership
     kb = verify_kb_ownership(session, kb_id, user_session["id"])
     
@@ -600,7 +583,6 @@ async def get_chunks_for_kb(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Get all chunks for a knowledge base - authenticated, owner only"""
     # Verify KB ownership
     kb = verify_kb_ownership(session, kb_id, user_session["id"])
     

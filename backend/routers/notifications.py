@@ -1,6 +1,3 @@
-"""
-Notifications Router - All endpoints secured with authentication
-"""
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session as DbSession
@@ -28,7 +25,6 @@ async def get_user_notifications(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Get all notifications for a user - authenticated"""
     # Verify user is accessing their own notifications
     if user_id != user_session["id"]:
         raise HTTPException(status_code=403, detail="Cannot access another user's notifications")
@@ -61,7 +57,6 @@ async def handle_notification(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Handle notification action - authenticated"""
     if action not in ["accept", "reject", "read"]:
         raise HTTPException(status_code=400, detail="Invalid action")
 
