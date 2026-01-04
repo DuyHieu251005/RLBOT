@@ -88,23 +88,35 @@ jobs:
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'ENDSSH'
             cd ${{ env.PROJECT_PATH }}
             
+            echo "🛑 Stopping current containers..."
+            docker compose -f docker-compose.prod.yml down
+
             echo "📥 Pulling latest code..."
             git pull origin main
             
-            echo "🔨 Rebuilding containers..."
+            echo "🔨 Rebuilding containers (No Cache)..."
             docker compose -f docker-compose.prod.yml build --no-cache
             
-            echo "🚀 Deploying containers..."
+            echo "🚀 Starting fresh containers..."
             docker compose -f docker-compose.prod.yml up -d
             
             echo "🧹 Cleaning up old images..."
             docker image prune -f
             
-            echo "✅ Deployment complete!"
+            echo "Health check loop (Max 60s)..."
+            for i in {1..12}; do
+              if curl -f https://mc-sv-hcmus.duckdns.org/api/health; then
+                echo -e "\n✅ Backend is HEALTHY!"
+                exit 0
+              fi
+              echo -n "."
+              sleep 5
+            done
+            
+            echo -e "\n❌ Backend failed to start in time!"
+            docker logs rlbot-backend-1 --tail 50
+            exit 1
           ENDSSH
 
-      - name: Health Check
-        run: |
-          sleep 30
-          curl -f https://mc-sv-hcmus.duckdns.org/api/health || echo "⚠️ Health check warning (may still be starting)"
+
 
