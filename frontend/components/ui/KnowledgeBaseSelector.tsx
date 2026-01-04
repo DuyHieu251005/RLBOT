@@ -36,6 +36,7 @@ export function KnowledgeBaseSelector({
   const [showKBList, setShowKBList] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState<{ current: number; total: number; currentFile: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: DragEvent<HTMLDivElement>) => {
@@ -116,7 +117,12 @@ export function KnowledgeBaseSelector({
 
       // Process files one by one to avoid memory spike
       const newFiles = [];
-      for (const file of files) {
+      setProcessingProgress({ current: 0, total: files.length, currentFile: files[0].name });
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        setProcessingProgress({ current: i, total: files.length, currentFile: file.name });
+
         // Skip files larger than 50MB to prevent memory issues
         if (file.size > 50 * 1024 * 1024) {
           logger.warn(`⚠️ File too large (${(file.size / 1024 / 1024).toFixed(1)}MB): ${file.name}. Max 50MB per file.`);
@@ -157,6 +163,7 @@ export function KnowledgeBaseSelector({
       onFilesUpload([...uploadedFiles, ...newFiles]);
     }
 
+    setProcessingProgress(null);
     setIsProcessing(false);
   };
 
@@ -169,7 +176,12 @@ export function KnowledgeBaseSelector({
 
       // Process files one by one to avoid memory spike
       const newFiles = [];
-      for (const file of files) {
+      setProcessingProgress({ current: 0, total: files.length, currentFile: files[0].name });
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        setProcessingProgress({ current: i, total: files.length, currentFile: file.name });
+
         // Skip files larger than 50MB to prevent memory issues
         if (file.size > 50 * 1024 * 1024) {
           logger.warn(`⚠️ File too large (${(file.size / 1024 / 1024).toFixed(1)}MB): ${file.name}. Max 50MB per file.`);
@@ -210,6 +222,7 @@ export function KnowledgeBaseSelector({
       onFilesUpload([...uploadedFiles, ...newFiles]);
     }
 
+    setProcessingProgress(null);
     setIsProcessing(false);
   };
 
@@ -406,10 +419,29 @@ export function KnowledgeBaseSelector({
           <p className="text-[10px] text-[#5A4635]">
             Supported: PDF, DOCX, TXT
           </p>
-          {isProcessing && (
+          {isProcessing && processingProgress && (
+            <div className="mt-3 w-full px-4">
+              <div className="flex items-center gap-2 text-[#9D4EDD] mb-2">
+                <div className="w-4 h-4 border-2 border-[#9D4EDD] border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-xs truncate max-w-[200px]">
+                  Processing: {processingProgress.currentFile}
+                </span>
+              </div>
+              <div className="bg-[#2A1B35] h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-[#9D4EDD] to-[#C77DFF] h-full transition-all duration-300"
+                  style={{ width: `${((processingProgress.current + 1) / processingProgress.total) * 100}%` }}
+                />
+              </div>
+              <p className="text-[10px] text-[#5A4635] mt-1 text-center">
+                {processingProgress.current + 1} of {processingProgress.total}
+              </p>
+            </div>
+          )}
+          {isProcessing && !processingProgress && (
             <div className="mt-2 flex items-center gap-2 text-[#9D4EDD]">
               <div className="w-4 h-4 border-2 border-[#9D4EDD] border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-xs">Extracting text from PDF...</span>
+              <span className="text-xs">Preparing...</span>
             </div>
           )}
         </div>

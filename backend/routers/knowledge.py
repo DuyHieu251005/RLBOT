@@ -243,6 +243,18 @@ async def upload_file_to_kb(
 
     try:
         logger.info(f"Saving {len(chunks)} chunks to database...")
+        
+        # Validate: Reject if no valid chunks were generated (all embeddings failed)
+        if len(chunks) == 0:
+            logger.warning("No valid chunks with embeddings generated")
+            file_record.status = FILE_STATUS_FAILED
+            file_record.error_message = "Failed to generate embeddings for any chunks"
+            session.commit()
+            raise HTTPException(
+                status_code=400, 
+                detail="File processing failed: Could not generate embeddings. The file may be too large or contain unsupported content."
+            )
+        
         session.add_all(chunks)
 
         file_record.status = FILE_STATUS_COMPLETED

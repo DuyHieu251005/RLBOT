@@ -45,6 +45,7 @@ export function CreateKnowledgeModal({
   const [kbName, setKbName] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [deletingFile, setDeletingFile] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number; currentFile: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Allowed file extensions (must match backend file_processors.py)
@@ -222,17 +223,24 @@ export function CreateKnowledgeModal({
         // Don't store content in frontend to prevent memory issues
       };
 
-      // Upload PDF files to Backend
-      for (const pdfFile of pdfFiles) {
-        try {
-          const result = await uploadPDFToBackend(pdfFile, editingKB.id);
-          logger.log("📤 PDF uploaded to Backend:", result);
-        } catch (error) {
-          logger.warn(
-            "⚠️ Failed to upload PDF to Backend, saved locally:",
-            error,
-          );
+      // Upload PDF files to Backend with progress tracking
+      if (pdfFiles.length > 0) {
+        setUploadProgress({ current: 0, total: pdfFiles.length, currentFile: pdfFiles[0].name });
+
+        for (let i = 0; i < pdfFiles.length; i++) {
+          const pdfFile = pdfFiles[i];
+          setUploadProgress({ current: i, total: pdfFiles.length, currentFile: pdfFile.name });
+
+          try {
+            const result = await uploadPDFToBackend(pdfFile, editingKB.id);
+            logger.log("📤 PDF uploaded to Backend:", result);
+          } catch (error) {
+            logger.warn("⚠️ Failed to upload PDF to Backend:", error);
+            toast.error(`Failed to upload ${pdfFile.name}`, { description: String(error) });
+          }
         }
+
+        setUploadProgress(null);
       }
 
       // Reload KB data from backend to get updated file count
@@ -288,19 +296,17 @@ export function CreateKnowledgeModal({
         // Don't store content in frontend to prevent memory issues - backend handles it
       };
 
-      // Upload PDF files to Backend
+      // Upload PDF files to Backend with progress tracking
       if (pdfFiles.length > 0) {
-        logger.log(
-          `📤 Uploading ${pdfFiles.length} PDF file(s) to Backend...`,
-        );
-        for (const pdfFile of pdfFiles) {
+        logger.log(`📤 Uploading ${pdfFiles.length} PDF file(s) to Backend...`);
+        setUploadProgress({ current: 0, total: pdfFiles.length, currentFile: pdfFiles[0].name });
+
+        for (let i = 0; i < pdfFiles.length; i++) {
+          const pdfFile = pdfFiles[i];
+          setUploadProgress({ current: i, total: pdfFiles.length, currentFile: pdfFile.name });
+
           try {
-            logger.log(
-              "📤 Uploading PDF to Backend:",
-              pdfFile.name,
-              "KB ID:",
-              newKB.id,
-            );
+            logger.log("📤 Uploading:", pdfFile.name, "KB ID:", newKB.id);
             const result = await uploadPDFToBackend(pdfFile, newKB.id);
             logger.log("✅ PDF uploaded to Backend:", result);
           } catch (error) {
@@ -308,6 +314,8 @@ export function CreateKnowledgeModal({
             toast.error(`Failed to upload file ${pdfFile.name}`, { description: String(error) });
           }
         }
+
+        setUploadProgress(null);
       } else {
         logger.log("ℹ️ No PDF files to upload");
       }
@@ -346,213 +354,241 @@ export function CreateKnowledgeModal({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-[#1a1a1a] border border-[#5A4635] rounded-lg w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.7)] overflow-hidden flex flex-col max-h-[90vh] relative">
-        <div className="absolute top-2 left-2 text-[#5A4635] opacity-30 text-xs">
-          ◈
+  // Upload Progress Overlay (Full screen blocker during file processing)
+  const UploadProgressOverlay = uploadProgress && (
+    <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center backdrop-blur-sm">
+      <div className="bg-[#1a1a1a] border border-[#5A4635] p-8 rounded-lg text-center max-w-md w-full mx-4 shadow-2xl">
+        <Loader2 className="w-16 h-16 text-[#9D4EDD] animate-spin mx-auto mb-6" />
+        <h3 className="text-[#E8DCC8] text-xl font-bold mb-2">Processing Files...</h3>
+        <p className="text-[#9B9380] text-sm mb-1">
+          Uploading: <span className="text-[#9D4EDD]">{uploadProgress.currentFile}</span>
+        </p>
+        <p className="text-[#5A4635] text-xs mb-4">
+          {uploadProgress.current} of {uploadProgress.total} completed
+        </p>
+        <div className="bg-[#2A1B35] h-3 rounded-full overflow-hidden mb-2">
+          <div
+            className="bg-gradient-to-r from-[#9D4EDD] to-[#C77DFF] h-full transition-all duration-500 ease-out"
+            style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+          />
         </div>
-        <div className="absolute top-2 right-2 text-[#5A4635] opacity-30 text-xs">
-          ◈
-        </div>
-
-        <div className="px-6 py-5 border-b border-[#5A4635] flex justify-between items-center bg-[#151515]">
-          <h3
-            className="text-lg font-bold text-[#E8DCC8] weathered-text tracking-wide"
-            style={{ fontFamily: "Merriweather, serif" }}
-          >
-            {editingKB ? "Edit Knowledge Base" : "Create Knowledge Base"}
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-[#9B9380] hover:text-[#9D4EDD] transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
-          <div className="space-y-2">
-            <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
-              Knowledge Base Name
-            </label>
-            <input
-              type="text"
-              value={kbName}
-              onChange={(e) => setKbName(e.target.value)}
-              className="w-full bg-[#0F0F0F] border border-[#5A4635] p-3 text-[#E8DCC8] focus:border-[#9D4EDD] focus:outline-none rounded-sm placeholder-[#4A3B2A] transition-colors"
-              placeholder="e.g. Server Rules v1.0"
-              style={{ fontFamily: "Noto Serif, serif" }}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
-              Upload Source Files
-            </label>
-            <div
-              className={`relative border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group
-                  ${dragActive
-                  ? "border-[#9D4EDD] bg-[#9D4EDD]/10"
-                  : "border-[#5A4635] bg-[#0F0F0F] hover:border-[#9B9380]"
-                }`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-              onClick={() => inputRef.current?.click()}
-            >
-              <input
-                ref={inputRef}
-                type="file"
-                multiple
-                className="hidden"
-                onChange={handleChange}
-              />
-
-              <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${dragActive ? "bg-[#9D4EDD]/20 text-[#9D4EDD]" : "bg-[#2A1B35] text-[#9B9380] group-hover:text-[#E8DCC8]"}`}
-              >
-                <Upload className="w-6 h-6" />
-              </div>
-
-              <p className="text-[#E8DCC8] font-medium mb-1 weathered-text">
-                Click to browse or drag file here
-              </p>
-              <p className="text-[#5A4635] text-xs">
-                Supported: PDF, DOCX, TXT
-              </p>
-              <p className="text-[#4A9D4E] text-[10px] mt-1">
-                ✅ PDF files will be processed and synced to Database
-              </p>
-            </div>
-          </div>
-
-          {existingFiles.length > 0 && (
-            <div className="space-y-2 mb-4 animate-in slide-in-from-bottom-2">
-              <div className="flex justify-between items-center">
-                <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
-                  Existing Files (Synced)
-                </label>
-                <span className="text-xs text-[#9D4EDD]">
-                  {existingFiles.length} files
-                </span>
-              </div>
-              <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                {existingFiles.map((file, idx) => (
-                  <div
-                    key={`existing-${idx}`}
-                    className="group flex items-center justify-between p-3 bg-[#1F1F1F] border border-[#5A4635]/50 rounded-sm hover:border-[#9D4EDD]/30 transition-all"
-                  >
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      {file.status === "completed" && (
-                        <CheckCircle2 className="w-4 h-4 text-[#4A9D4E] flex-shrink-0" />
-                      )}
-                      {file.status === "processing" && (
-                        <Loader2 className="w-4 h-4 text-[#FFD700] animate-spin flex-shrink-0" />
-                      )}
-                      {file.status === "failed" && (
-                        <AlertCircle className="w-4 h-4 text-[#FF4444] flex-shrink-0" />
-                      )}
-
-                      <div className="flex flex-col">
-                        <span className="text-sm text-[#E8DCC8] truncate font-sans max-w-[200px]">
-                          {file.filename}
-                        </span>
-                        <span className="text-[10px] text-[#5A4635]">
-                          {file.status === "completed"
-                            ? "Synced"
-                            : file.status === "failed"
-                              ? "Failed"
-                              : "Processing..."}
-                          {file.status === "failed" &&
-                            file.error_message &&
-                            ` - ${file.error_message.substring(0, 20)}...`}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteExistingFile(file.filename)}
-                      disabled={deletingFile === file.filename}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 text-[#5A4635] hover:text-red-400 hover:bg-red-400/10 rounded transition-all disabled:opacity-50"
-                      title="Delete file from knowledge base"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {files.length > 0 && (
-            <div className="space-y-2 animate-in slide-in-from-bottom-2">
-              <div className="flex justify-between items-center">
-                <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
-                  Selected Files
-                </label>
-                <span className="text-xs text-[#9D4EDD]">
-                  {files.length} files ready
-                </span>
-              </div>
-              <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                {files.map((file, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-3 bg-[#1F1F1F] border border-[#5A4635]/50 rounded-sm"
-                  >
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <FileText className="w-4 h-4 text-[#9D4EDD] flex-shrink-0" />
-                      <div className="flex flex-col">
-                        <span className="text-sm text-[#E8DCC8] truncate font-sans max-w-[200px]">
-                          {file.name}
-                        </span>
-                        <span className="text-[10px] text-[#5A4635]">
-                          {(file.size / 1024).toFixed(0)} KB
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => removeFile(idx)}
-                      className="p-1.5 text-[#5A4635] hover:text-red-400 hover:bg-red-400/10 rounded transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="px-6 py-4 bg-[#151515] border-t border-[#5A4635] flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            disabled={isProcessing}
-            className="px-4 py-2 rounded-sm text-[#9B9380] hover:text-[#E8DCC8] hover:bg-[#2B2B2B] transition-colors font-medium text-sm weathered-text disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleCreate}
-            disabled={isProcessing || !kbName.trim()}
-            className="px-5 py-2 rounded-sm bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all shadow-[0_0_15px_rgba(157,78,221,0.15)] font-bold text-sm tracking-wide weathered-text flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isProcessing ? (
-              <>
-                <div className="w-4 h-4 border-2 border-[#9D4EDD] border-t-transparent rounded-full animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="w-4 h-4" />
-                {editingKB ? "Update Base" : "Create Base"}
-              </>
-            )}
-          </button>
-        </div>
+        <p className="text-[#5A4635] text-[10px]">
+          Large files may take several minutes. Please wait...
+        </p>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {UploadProgressOverlay}
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="bg-[#1a1a1a] border border-[#5A4635] rounded-lg w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.7)] overflow-hidden flex flex-col max-h-[90vh] relative">
+          <div className="absolute top-2 left-2 text-[#5A4635] opacity-30 text-xs">
+            ◈
+          </div>
+          <div className="absolute top-2 right-2 text-[#5A4635] opacity-30 text-xs">
+            ◈
+          </div>
+
+          <div className="px-6 py-5 border-b border-[#5A4635] flex justify-between items-center bg-[#151515]">
+            <h3
+              className="text-lg font-bold text-[#E8DCC8] weathered-text tracking-wide"
+              style={{ fontFamily: "Merriweather, serif" }}
+            >
+              {editingKB ? "Edit Knowledge Base" : "Create Knowledge Base"}
+            </h3>
+            <button
+              onClick={onClose}
+              className="text-[#9B9380] hover:text-[#9D4EDD] transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+            <div className="space-y-2">
+              <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
+                Knowledge Base Name
+              </label>
+              <input
+                type="text"
+                value={kbName}
+                onChange={(e) => setKbName(e.target.value)}
+                className="w-full bg-[#0F0F0F] border border-[#5A4635] p-3 text-[#E8DCC8] focus:border-[#9D4EDD] focus:outline-none rounded-sm placeholder-[#4A3B2A] transition-colors"
+                placeholder="e.g. Server Rules v1.0"
+                style={{ fontFamily: "Noto Serif, serif" }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
+                Upload Source Files
+              </label>
+              <div
+                className={`relative border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group
+                  ${dragActive
+                    ? "border-[#9D4EDD] bg-[#9D4EDD]/10"
+                    : "border-[#5A4635] bg-[#0F0F0F] hover:border-[#9B9380]"
+                  }`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                onClick={() => inputRef.current?.click()}
+              >
+                <input
+                  ref={inputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={handleChange}
+                />
+
+                <div
+                  className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${dragActive ? "bg-[#9D4EDD]/20 text-[#9D4EDD]" : "bg-[#2A1B35] text-[#9B9380] group-hover:text-[#E8DCC8]"}`}
+                >
+                  <Upload className="w-6 h-6" />
+                </div>
+
+                <p className="text-[#E8DCC8] font-medium mb-1 weathered-text">
+                  Click to browse or drag file here
+                </p>
+                <p className="text-[#5A4635] text-xs">
+                  Supported: PDF, DOCX, TXT
+                </p>
+                <p className="text-[#4A9D4E] text-[10px] mt-1">
+                  ✅ PDF files will be processed and synced to Database
+                </p>
+              </div>
+            </div>
+
+            {existingFiles.length > 0 && (
+              <div className="space-y-2 mb-4 animate-in slide-in-from-bottom-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
+                    Existing Files (Synced)
+                  </label>
+                  <span className="text-xs text-[#9D4EDD]">
+                    {existingFiles.length} files
+                  </span>
+                </div>
+                <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                  {existingFiles.map((file, idx) => (
+                    <div
+                      key={`existing-${idx}`}
+                      className="group flex items-center justify-between p-3 bg-[#1F1F1F] border border-[#5A4635]/50 rounded-sm hover:border-[#9D4EDD]/30 transition-all"
+                    >
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        {file.status === "completed" && (
+                          <CheckCircle2 className="w-4 h-4 text-[#4A9D4E] flex-shrink-0" />
+                        )}
+                        {file.status === "processing" && (
+                          <Loader2 className="w-4 h-4 text-[#FFD700] animate-spin flex-shrink-0" />
+                        )}
+                        {file.status === "failed" && (
+                          <AlertCircle className="w-4 h-4 text-[#FF4444] flex-shrink-0" />
+                        )}
+
+                        <div className="flex flex-col">
+                          <span className="text-sm text-[#E8DCC8] truncate font-sans max-w-[200px]">
+                            {file.filename}
+                          </span>
+                          <span className="text-[10px] text-[#5A4635]">
+                            {file.status === "completed"
+                              ? "Synced"
+                              : file.status === "failed"
+                                ? "Failed"
+                                : "Processing..."}
+                            {file.status === "failed" &&
+                              file.error_message &&
+                              ` - ${file.error_message.substring(0, 20)}...`}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteExistingFile(file.filename)}
+                        disabled={deletingFile === file.filename}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 text-[#5A4635] hover:text-red-400 hover:bg-red-400/10 rounded transition-all disabled:opacity-50"
+                        title="Delete file from knowledge base"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {files.length > 0 && (
+              <div className="space-y-2 animate-in slide-in-from-bottom-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
+                    Selected Files
+                  </label>
+                  <span className="text-xs text-[#9D4EDD]">
+                    {files.length} files ready
+                  </span>
+                </div>
+                <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                  {files.map((file, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-3 bg-[#1F1F1F] border border-[#5A4635]/50 rounded-sm"
+                    >
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <FileText className="w-4 h-4 text-[#9D4EDD] flex-shrink-0" />
+                        <div className="flex flex-col">
+                          <span className="text-sm text-[#E8DCC8] truncate font-sans max-w-[200px]">
+                            {file.name}
+                          </span>
+                          <span className="text-[10px] text-[#5A4635]">
+                            {(file.size / 1024).toFixed(0)} KB
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeFile(idx)}
+                        className="p-1.5 text-[#5A4635] hover:text-red-400 hover:bg-red-400/10 rounded transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="px-6 py-4 bg-[#151515] border-t border-[#5A4635] flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              disabled={isProcessing || uploadProgress !== null}
+              className="px-4 py-2 rounded-sm text-[#9B9380] hover:text-[#E8DCC8] hover:bg-[#2B2B2B] transition-colors font-medium text-sm weathered-text disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreate}
+              disabled={isProcessing || !kbName.trim() || uploadProgress !== null}
+              className="px-5 py-2 rounded-sm bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all shadow-[0_0_15px_rgba(157,78,221,0.15)] font-bold text-sm tracking-wide weathered-text flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isProcessing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-[#9D4EDD] border-t-transparent rounded-full animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  {editingKB ? "Update Base" : "Create Base"}
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
