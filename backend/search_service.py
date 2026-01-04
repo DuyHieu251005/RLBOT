@@ -1,10 +1,3 @@
-"""
-Search Service Module (PostgreSQL/pgvector)
-1. Generate embedding for query
-2. Search PostgreSQL using vector similarity
-3. Return aggregated context
-"""
-
 from functools import lru_cache
 from typing import Dict, List, Optional
 
@@ -43,7 +36,7 @@ async def generate_embedding(text: str) -> List[float]:
 
         return embedding
     except Exception as e:
-        print(f"❌ Error generating embedding: {e}")
+        print(f"Error generating embedding: {e}")
         return []
 
 
@@ -55,7 +48,7 @@ async def expand_keywords_with_ai(query: str) -> List[str]:
     """
     # Check cache first
     if query in KEYWORD_CACHE:
-        print(f"⚡ Cache hit for query: '{query}'")
+        print(f"Cache hit for query: '{query}'")
         return KEYWORD_CACHE[query]
 
     try:
@@ -102,7 +95,7 @@ Keywords:"""
         return keywords
 
     except Exception as e:
-        print(f"❌ Error expanding keywords: {e}")
+        print(f"Error expanding keywords: {e}")
         # Fallback: just use the original query
         return [query]
 
@@ -122,7 +115,7 @@ async def retrieve_context(
     4. Fallback to raw file content if no chunks found for bot
     """
     if not db_session:
-        print("⚠️ No DB session provided for retrieval")
+        print("No DB session provided for retrieval")
         return ""
 
     # Step 1: Generate embedding
@@ -155,17 +148,17 @@ async def retrieve_context(
     else:
         # If no KB and no Bot ID provided, don't search anything
         # (Security: Prevent searching entire DB)
-        print("⚠️ No context filters provided (KB or Bot ID), skipping search")
+        print("No context filters provided (KB or Bot ID), skipping search")
         return ""
 
     results = db_session.execute(stmt).all()
 
     if not results:
-        print("⚠️ No relevant chunks found")
+        print("No relevant chunks found")
         
         # Fallback: If bot_id provided, try to get raw file content
         if bot_id:
-            print(f"📄 Fallback: Retrieving raw file content for bot {bot_id}")
+            print(f"Fallback: Retrieving raw file content for bot {bot_id}")
             files = db_session.query(File).filter(File.bot_id == bot_id).all()
             if files:
                 context_parts = []
@@ -174,7 +167,7 @@ async def retrieve_context(
                         context_parts.append(f"[Source: {f.filename}]\n{f.content}")
                 if context_parts:
                     full_context = "\n\n---\n\n".join(context_parts)
-                    print(f"✅ Fallback: Retrieved {len(files)} files, total context length: {len(full_context)} chars")
+                    print(f"Fallback: Retrieved {len(files)} files, total context length: {len(full_context)} chars")
                     return full_context
         
         return ""
@@ -189,7 +182,7 @@ async def retrieve_context(
     full_context = "\n\n---\n\n".join(context_parts)
 
     print(
-        f"✅ Retrieved {len(results)} chunks, total context length: {len(full_context)} chars"
+        f"Retrieved {len(results)} chunks, total context length: {len(full_context)} chars"
     )
 
     return full_context

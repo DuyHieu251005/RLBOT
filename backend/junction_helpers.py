@@ -1,8 +1,3 @@
-"""
-Helper functions for junction table operations
-Implements dual-write pattern: write to both junction tables AND JSONB for backward compatibility
-"""
-
 from sqlalchemy.orm import Session as DbSession
 from sqlalchemy import select, and_
 from models import (
@@ -15,7 +10,6 @@ from typing import List, Optional
 # ============== GROUP MEMBERS ==============
 
 def add_group_member(session: DbSession, group_id: str, user_id: str, role: str = 'viewer'):
-    """Add member to group (junction table only)"""
     # 1. Add to junction table
     member = session.query(GroupMember).filter(
         and_(GroupMember.group_id == group_id, GroupMember.user_id == user_id)
@@ -28,7 +22,6 @@ def add_group_member(session: DbSession, group_id: str, user_id: str, role: str 
     return member
 
 def remove_group_member(session: DbSession, group_id: str, user_id: str):
-    """Remove member from group"""
     # 1. Remove from junction table
     session.query(GroupMember).filter(
         and_(GroupMember.group_id == group_id, GroupMember.user_id == user_id)
@@ -36,7 +29,6 @@ def remove_group_member(session: DbSession, group_id: str, user_id: str):
     session.commit()
 
 def get_group_members(session: DbSession, group_id: str) -> List[GroupMember]:
-    """Get all members of a group (returns GroupMember records with user_id)"""
     members = session.query(GroupMember).filter(
         GroupMember.group_id == group_id
     ).all()
@@ -44,7 +36,6 @@ def get_group_members(session: DbSession, group_id: str) -> List[GroupMember]:
     return members
 
 def get_user_groups(session: DbSession, user_id: str) -> List[Group]:
-    """Get all groups user is member of"""
     groups = session.query(Group).join(
         GroupMember, Group.id == GroupMember.group_id
     ).filter(GroupMember.user_id == user_id).all()
@@ -59,7 +50,6 @@ def get_user_groups(session: DbSession, user_id: str) -> List[Group]:
 # ============== BOT KNOWLEDGE BASES ==============
 
 def add_bot_knowledge_base(session: DbSession, bot_id: str, kb_id: str):
-    """Link bot to knowledge base"""
     # 1. Add to junction table
     link = session.query(BotKnowledgeBase).filter(
         and_(BotKnowledgeBase.bot_id == bot_id, BotKnowledgeBase.knowledge_base_id == kb_id)
@@ -72,7 +62,6 @@ def add_bot_knowledge_base(session: DbSession, bot_id: str, kb_id: str):
     return link
 
 def remove_bot_knowledge_base(session: DbSession, bot_id: str, kb_id: str):
-    """Unlink bot from knowledge base"""
     # 1. Remove from junction table
     session.query(BotKnowledgeBase).filter(
         and_(BotKnowledgeBase.bot_id == bot_id, BotKnowledgeBase.knowledge_base_id == kb_id)
@@ -80,7 +69,6 @@ def remove_bot_knowledge_base(session: DbSession, bot_id: str, kb_id: str):
     session.commit()
 
 def get_bot_knowledge_bases(session: DbSession, bot_id: str) -> List[str]:
-    """Get all knowledge base IDs for a bot"""
     kbs = session.query(BotKnowledgeBase.knowledge_base_id).filter(
         BotKnowledgeBase.bot_id == bot_id
     ).all()
@@ -90,7 +78,6 @@ def get_bot_knowledge_bases(session: DbSession, bot_id: str) -> List[str]:
 # ============== BOT SHARED ACCESS ==============
 
 def share_bot_with_user(session: DbSession, bot_id: str, user_id: str):
-    """Share bot with a user"""
     # 1. Add to junction table
     access = session.query(BotSharedAccess).filter(
         and_(BotSharedAccess.bot_id == bot_id, BotSharedAccess.user_id == user_id)
@@ -103,7 +90,6 @@ def share_bot_with_user(session: DbSession, bot_id: str, user_id: str):
     return access
 
 def unshare_bot_from_user(session: DbSession, bot_id: str, user_id: str):
-    """Unshare bot from user"""
     # 1. Remove from junction table
     session.query(BotSharedAccess).filter(
         and_(BotSharedAccess.bot_id == bot_id, BotSharedAccess.user_id == user_id)
@@ -111,7 +97,6 @@ def unshare_bot_from_user(session: DbSession, bot_id: str, user_id: str):
     session.commit()
 
 def share_bot_with_group(session: DbSession, bot_id: str, group_id: str):
-    """Share bot with a group"""
     # 1. Add to junction table
     access = session.query(BotSharedAccess).filter(
         and_(BotSharedAccess.bot_id == bot_id, BotSharedAccess.group_id == group_id)
@@ -124,7 +109,6 @@ def share_bot_with_group(session: DbSession, bot_id: str, group_id: str):
     return access
 
 def unshare_bot_from_group(session: DbSession, bot_id: str, group_id: str):
-    """Unshare bot from group"""
     # 1. Remove from junction table
     session.query(BotSharedAccess).filter(
         and_(BotSharedAccess.bot_id == bot_id, BotSharedAccess.group_id == group_id)
@@ -132,7 +116,6 @@ def unshare_bot_from_group(session: DbSession, bot_id: str, group_id: str):
     session.commit()
 
 def get_bots_shared_with_user(session: DbSession, user_id: str) -> List[Bot]:
-    """Get all bots shared with user (directly or via groups)"""
     # Direct shares
     direct_bots = session.query(Bot).join(
         BotSharedAccess, Bot.id == BotSharedAccess.bot_id
@@ -157,8 +140,6 @@ def get_bots_shared_with_user(session: DbSession, user_id: str) -> List[Bot]:
 # ============== SESSION MESSAGES ==============
 
 def add_session_message(session: DbSession, session_id: str, role: str, content: str):
-    """Add message to session (SessionMessage table only)"""
-    
     message = SessionMessage(
         session_id=session_id,
         role=role,
@@ -170,7 +151,6 @@ def add_session_message(session: DbSession, session_id: str, role: str, content:
     return message
 
 def get_session_messages(session: DbSession, session_id: str) -> List[SessionMessage]:
-    """Get all messages for a session"""
     messages = session.query(SessionMessage).filter(
         SessionMessage.session_id == session_id
     ).order_by(SessionMessage.created_at).all()

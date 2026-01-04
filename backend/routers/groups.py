@@ -1,6 +1,3 @@
-"""
-Groups Router - All endpoints secured with authentication and ownership verification
-"""
 import logging
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Body
@@ -23,7 +20,6 @@ router = APIRouter(prefix="/api/groups")
 
 
 def verify_group_ownership(session: DbSession, group_id: str, user_id: str) -> Group:
-    """Verify user owns the group. Returns Group if owned, raises HTTPException otherwise."""
     group = session.query(Group).filter(Group.id == group_id).first()
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
@@ -38,7 +34,6 @@ async def create_group(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Create a new group - authenticated"""
     new_group = Group(
         name=group_data.name,
         description=group_data.description,
@@ -75,7 +70,6 @@ async def get_user_groups_endpoint(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Get all groups for a user - authenticated"""
     # Verify user is accessing their own groups
     if user_id != user_session["id"]:
         raise HTTPException(status_code=403, detail="Cannot access another user's groups")
@@ -170,7 +164,6 @@ async def update_group(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Update a group - authenticated, owner only"""
     # Verify ownership
     group = verify_group_ownership(session, group_id, user_session["id"])
 
@@ -199,7 +192,6 @@ async def delete_group(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Delete a group - authenticated, owner only"""
     # Verify ownership
     group = verify_group_ownership(session, group_id, user_session["id"])
 
@@ -216,7 +208,6 @@ async def invite_to_group(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Invite a user to a group - authenticated, owner only"""
     # Verify ownership
     group = verify_group_ownership(session, group_id, user_session["id"])
 
@@ -282,7 +273,6 @@ async def remove_member_from_group(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Remove a member from group - authenticated, owner only"""
     user_id_to_remove = data.get("user_id")
     email = data.get("email")
     
@@ -325,7 +315,6 @@ async def leave_group(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """Leave a group - authenticated"""
     group = session.query(Group).filter(Group.id == group_id).first()
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")

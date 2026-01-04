@@ -15,7 +15,6 @@ router = APIRouter(prefix="/api")
 
 @router.get("/auth/verify")
 async def verify_auth(user: dict = Depends(get_current_user)):
-    """Verify Supabase JWT token and return user info"""
     return {
         "id": user["id"],
         "email": user["email"],
@@ -24,7 +23,7 @@ async def verify_auth(user: dict = Depends(get_current_user)):
 
 @router.get("/auth/me")
 async def get_me(user: dict = Depends(get_current_user)):
-    """Get current user info"""
+    #Get current user info
     return {
         "id": user["id"],
         "email": user["email"],
@@ -37,11 +36,6 @@ async def get_user_dashboard(
     session: DbSession = Depends(get_db),
     user_session: dict = Depends(get_current_user),
 ):
-    """
-    OPTIMIZED: Load ALL dashboard data in ONE request
-    Returns: bots, knowledge_bases, groups
-    Reduces 3 API calls to 1 → Faster login!
-    """
     # Verify user is requesting their own dashboard
     if user_id != user_session["id"]:
         from fastapi import HTTPException

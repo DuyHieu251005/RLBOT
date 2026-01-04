@@ -14,7 +14,6 @@ router = APIRouter(prefix="/api")
 
 
 class CombinedChatRequest(BaseModel):
-    """Combined request for RAG + AI generation in one call"""
     prompt: str
     system_instructions: Optional[str] = None
     knowledge_base_ids: Optional[List[str]] = []
@@ -26,9 +25,6 @@ class CombinedChatRequest(BaseModel):
 
 @router.post("/retrieve", response_model=ChatContextResponse)
 async def retrieve_for_chat(request: ChatRequest, session: DbSession = Depends(get_db)):
-    """
-    Main RAG retrieval endpoint
-    """
     # Get expanded keywords
     if request.expand_keywords:
         keywords = await expand_keywords_with_ai(request.query)
@@ -53,7 +49,6 @@ async def retrieve_for_chat(request: ChatRequest, session: DbSession = Depends(g
 
 @router.get("/ai/providers")
 async def get_ai_providers():
-    """Get available AI providers"""
     providers = ai_service.get_available_providers()
     return {
         "providers": providers,
@@ -63,7 +58,6 @@ async def get_ai_providers():
 
 @router.post("/gemini/generate")
 async def generate_with_gemini(request: GeminiRequest):
-    """Generate response using AI (Gemini or OpenRouter)"""
     try:
         # Use specified provider or default
         provider = request.provider or settings.DEFAULT_AI_PROVIDER
@@ -91,11 +85,6 @@ async def generate_with_gemini(request: GeminiRequest):
 
 @router.post("/chat/stream")
 async def chat_with_stream(request: CombinedChatRequest, session: DbSession = Depends(get_db)):
-    """
-    Combined RAG + AI streaming endpoint
-    1. Retrieves context from knowledge bases (with keyword expansion)
-    2. Streams AI response in real-time
-    """
     # Validate prompt
     if not request.prompt or not request.prompt.strip():
         async def error_gen():
@@ -157,10 +146,6 @@ Please answer based on the context above. Format your response with clear struct
 
 @router.post("/chat/combined")
 async def chat_combined(request: CombinedChatRequest, session: DbSession = Depends(get_db)):
-    """
-    Combined RAG + AI generation in one call (non-streaming)
-    Reduces round-trips by handling retrieval and generation server-side
-    """
     # Validate prompt
     if not request.prompt or not request.prompt.strip():
         raise HTTPException(status_code=400, detail="Prompt cannot be empty")
