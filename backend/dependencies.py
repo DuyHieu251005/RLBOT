@@ -13,7 +13,4 @@ def get_db():
 
 # Dependency for Auth
 async def get_current_user(authorization: str = Header(None)):
-    """
-    Dependency to get current authenticated user from Supabase JWT
-    """
     return await get_current_user_supabase(authorization)

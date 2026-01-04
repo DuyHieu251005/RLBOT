@@ -49,7 +49,6 @@ class Database:
     def connect(self):
         """Connect to PostgreSQL and create tables"""
         if self._engine is None:
-            # Clean URL to remove unsupported parameters
             db_url = clean_database_url(settings.DATABASE_URL)
             
             self._engine = create_engine(
@@ -74,7 +73,7 @@ class Database:
                     conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
                     conn.commit()
             except Exception as e:
-                print(f"⚠️ Warning: Could not enable pgvector extension: {e}")
+                print(f"Warning: Could not enable pgvector extension: {e}")
                 print("   (This is expected if using Supabase Transaction Pooler. Ensure 'vector' extension is enabled in Supabase Dashboard)")
             
             # Create tables

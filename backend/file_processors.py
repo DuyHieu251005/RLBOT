@@ -10,7 +10,7 @@ try:
     import docx
 except ImportError:
     docx = None
-    print("⚠️ 'python-docx' library not found. DOCX support disabled.")
+    print("'python-docx' library not found. DOCX support disabled.")
 
 from config import settings
 import google.generativeai as genai
@@ -29,9 +29,8 @@ text_splitter = RecursiveCharacterTextSplitter(
 
 
 def generate_embeddings_batch(texts: List[str]) -> List[List[float]]:
-    """Generate embeddings for multiple texts in one API call (Optimized)"""
     if not settings.GEMINI_API_KEY:
-        print("❌ GEMINI_API_KEY missing")
+        print("GEMINI_API_KEY missing")
         return []
     
     if not texts:
@@ -50,7 +49,7 @@ def generate_embeddings_batch(texts: List[str]) -> List[List[float]]:
         # Return list of embeddings
         return result['embedding']
     except Exception as e:
-        print(f"❌ Error generating batch embeddings: {e}")
+        print(f"Error generating batch embeddings: {e}")
         # Fallback to empty list or raise
         return []
 
@@ -80,7 +79,7 @@ async def process_file_to_chunks(
         raise ValueError(f"Unsupported file type: {file_type}")
 
     if not text_content.strip():
-        print(f"⚠️ Empty text content for file: {filename}")
+        print(f"Empty text content for file: {filename}")
         return [], file_size
 
     # 2. Split Text into Chunks
@@ -88,7 +87,7 @@ async def process_file_to_chunks(
     if not text_chunks:
         return [], file_size
         
-    print(f"ℹ️ Split {filename} into {len(text_chunks)} chunks. Generating embeddings...")
+    print(f"Split {filename} into {len(text_chunks)} chunks. Generating embeddings...")
 
     # 3. Generate Embeddings (Batch Optimization)
     processed_chunks = []
@@ -105,7 +104,7 @@ async def process_file_to_chunks(
             batch_embeddings = generate_embeddings_batch(batch_texts)
             
             if not batch_embeddings or len(batch_embeddings) != len(batch_texts):
-                print(f"⚠️ Mismatch or empty embeddings for batch {i//api_batch_size}")
+                print(f"Mismatch or empty embeddings for batch {i//api_batch_size}")
                 continue
                 
             # Pair text with embedding
@@ -122,15 +121,14 @@ async def process_file_to_chunks(
                 processed_chunks.append(chunk_data)
                 
         except Exception as e:
-            print(f"❌ Error processing batch {i}: {e}")
+            print(f"Error processing batch {i}: {e}")
             continue
 
-    print(f"✅ Successfully processed {len(processed_chunks)} chunks for {filename}")
+    print(f"Successfully processed {len(processed_chunks)} chunks for {filename}")
     return processed_chunks, file_size
 
 
 def _extract_text_from_pdf(file_path: str) -> str:
-    """Extract text from PDF file"""
     doc = fitz.open(file_path)
     text = ""
     for page in doc:
@@ -139,7 +137,6 @@ def _extract_text_from_pdf(file_path: str) -> str:
 
 
 def _extract_text_from_docx(file_path: str) -> str:
-    """Extract text from DOCX file"""
     if not docx:
         raise ImportError("python-docx not installed")
 
@@ -151,7 +148,6 @@ def _extract_text_from_docx(file_path: str) -> str:
 
 
 def _extract_text_from_txt(file_path: str) -> str:
-    """Extract text from TXT file with encoding detection"""
     # Detect encoding
     with open(file_path, "rb") as f:
         raw_data = f.read()
