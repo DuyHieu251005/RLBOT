@@ -1,6 +1,6 @@
-# 🚀 RLBot GCP Deployment - Quick Start
+# RLBot GCP Deployment - Quick Start
 
-## 📋 Trước Khi Deploy
+## Trước Khi Deploy
 
 ### 1. Chuẩn Bị Environment Files
 
@@ -28,7 +28,7 @@ Vào [supabase.com](https://supabase.com) → Project Settings → Authenticatio
 
 ---
 
-## 🚀 Deploy Lên VM
+## Deploy Lên VM
 
 ### Step 1: Upload bằng WinSCP
 
@@ -47,7 +47,7 @@ chmod +x deploy.sh
 
 ---
 
-## 📁 Files Đã Tạo
+## Files Đã Tạo
 
 | File | Mô Tả |
 |------|-------|
@@ -61,7 +61,7 @@ chmod +x deploy.sh
 
 ---
 
-## ⚠️ Checklist
+## Checklist
 
 - [ ] Điền `backend/.env` với API keys
 - [ ] Điền `frontend/.env.production` với Supabase info
@@ -72,7 +72,7 @@ chmod +x deploy.sh
 
 ---
 
-## 🔧 Commands Hữu Ích
+## Commands Hữu Ích
 
 ```bash
 # Xem logs
