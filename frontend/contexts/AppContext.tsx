@@ -255,14 +255,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       let targetSessionId = activeSessionId;
       let currentSession = sessions.find((s) => s.id === targetSessionId);
-      let isNewSession = false;
 
+      // [FIX] Ensure we have a valid session before proceeding with AI generation
+      // This prevents "Zombie Sessions" where we chat on a temp ID that never gets saved.
       if (!targetSessionId || !currentSession) {
         logger.log("✨ Creating NEW session");
-        isNewSession = true;
         const tempId = Date.now().toString();
-        targetSessionId = tempId;
 
+        // Optimistic UI update
         const newSession: ChatSession = {
           id: tempId,
           title: text.length > 30 ? text.slice(0, 30) + "..." : text,
@@ -275,7 +275,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         setSessions((prev) => [newSession, ...prev]);
         setActiveSessionId(tempId);
+        targetSessionId = tempId;
 
+        // Sync with Backend immediately and WAIT for the ID
         if (isAuthenticated && user && !activeBot?.isPublic) {
           try {
             const result = await saveChatSession({
@@ -292,14 +294,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
               logger.log(`✅ Session created. TempID [${tempId}] -> RealID [${result.id}]`);
               const realId = result.id;
               targetSessionId = realId;
+
+              // Atomically update session ID and active ID
               setSessions((prev) => prev.map((s) => (s.id === tempId ? { ...s, id: realId } : s)));
               setActiveSessionId(realId);
+            } else {
+              toast.error("Warning: Chat session could not be saved to server.");
             }
           } catch (error) {
             logger.error("Failed to save new session:", error);
+            toast.error("Failed to create chat session. Please refresh.");
           }
         }
       } else {
+        // ... (Existing logic for append)
         logger.log("📝 Appending to EXISTING session:", targetSessionId);
         setSessions((prev) =>
           prev.map((session) =>
@@ -310,12 +318,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         );
 
         if (isAuthenticated && user) {
-          // Append-only: just add the user message
-          addMessageToSession(targetSessionId, newUserMsg.role, newUserMsg.content);
+          // We don't await this one to keep the UI snappy, but we catch errors
+          addMessageToSession(targetSessionId, newUserMsg.role, newUserMsg.content).catch(err => {
+            logger.error("Failed to sync user message:", err);
+          });
         }
       }
 
-      // AI Response
+      // AI Response Generation (Now guaranteed to have a valid targetSessionId if creation succeeded)
       try {
         const botAIProvider = activeBot?.aiProvider || aiProvider;
 
@@ -342,8 +352,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         );
 
         if (isAuthenticated && user) {
-          // Append-only: just add the bot message
-          addMessageToSession(targetSessionId, botMsg.role, botMsg.content);
+          addMessageToSession(targetSessionId, botMsg.role, botMsg.content).catch(err => {
+            logger.error("Failed to sync bot message:", err);
+          });
         }
       } catch (error) {
         logger.error("AI Error:", error);
