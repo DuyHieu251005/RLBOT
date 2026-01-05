@@ -1,8 +1,3 @@
-/**
- * AppContext - Main application state provider
- * Refactored to use useDashboardData hook for bots, KBs, groups
- * Only sessions/chat logic remains here
- */
 import {
   createContext,
   useContext,

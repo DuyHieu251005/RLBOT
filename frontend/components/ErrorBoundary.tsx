@@ -1,7 +1,3 @@
-/**
- * ErrorBoundary - Catches JavaScript errors in child components
- * Displays fallback UI instead of crashing the whole app
- */
 import React, { Component, ReactNode } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 
@@ -77,9 +73,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 }
 
-/**
- * withErrorBoundary - HOC to wrap components with ErrorBoundary
- */
 export function withErrorBoundary<P extends object>(
     WrappedComponent: React.ComponentType<P>,
     fallback?: ReactNode

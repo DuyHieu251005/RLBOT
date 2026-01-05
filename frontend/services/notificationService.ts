@@ -1,14 +1,8 @@
-/**
- * Notification Service - All notification-related API calls + Supabase Realtime
- */
 import { supabase } from "../supabaseClient";
 import { BACKEND_URL, getAuthToken } from "./apiHelpers";
 import { logger } from "../utils/logger";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
-/**
- * Notification data structure
- */
 export interface Notification {
     id: string;
     user_id: string;
@@ -118,9 +112,6 @@ export function subscribeToNotifications(
     };
 }
 
-/**
- * Get user notifications (initial load) with retry for auth
- */
 export async function getUserNotifications(
     userId: string,
 ): Promise<Notification[]> {
@@ -163,9 +154,6 @@ export async function getUserNotifications(
     return [];
 }
 
-/**
- * Handle notification action (accept/reject/read)
- */
 export async function handleNotificationAction(
     notificationId: string,
     action: "accept" | "reject" | "read",

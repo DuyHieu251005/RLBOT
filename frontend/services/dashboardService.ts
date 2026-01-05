@@ -1,8 +1,3 @@
-/**
- * Dashboard Service - Optimized single-request data loading
- * Reduces 3 API calls (bots, KBs, groups) to 1 for faster login
- * Uses smart retry with exponential backoff for session establishment
- */
 import { BotData, KnowledgeBaseData, GroupData } from "../types";
 import { BACKEND_URL, getAuthToken } from "./apiHelpers";
 import { AI_MODELS } from "../constants";
@@ -15,10 +10,6 @@ export interface DashboardData {
     groups: GroupData[];
 }
 
-/**
- * Smart retry helper with exponential backoff
- * Retries on 401 errors (session not yet established)
- */
 async function fetchWithRetry<T>(
     fn: () => Promise<T>,
     maxRetries: number = 3,
@@ -52,10 +43,6 @@ async function fetchWithRetry<T>(
     throw lastError;
 }
 
-/**
- * Load all user dashboard data in a single request
- * Uses smart retry - no fixed delay needed!
- */
 export async function getUserDashboard(userId: string): Promise<DashboardData> {
     const emptyResult = { bots: [], knowledgeBases: [], groups: [] };
 

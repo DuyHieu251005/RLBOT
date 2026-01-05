@@ -1,19 +1,3 @@
-/**
- * API Module - Re-exports all service functions for backward compatibility
- * 
- * This file now serves as a barrel file that re-exports all functions
- * from individual service modules. This maintains backward compatibility
- * while the codebase is organized into smaller, focused modules.
- * 
- * Service Modules:
- * - apiHelpers.ts: Shared utilities (auth, language detection)
- * - botService.ts: Bot CRUD and sharing operations
- * - kbService.ts: Knowledge Base operations
- * - chatService.ts: AI chat and session management
- * - groupService.ts: Group operations
- * - notificationService.ts: Notification operations
- */
-
 // ==================== API HELPERS ====================
 export {
   BACKEND_URL,

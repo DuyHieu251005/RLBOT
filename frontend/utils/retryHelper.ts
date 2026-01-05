@@ -1,12 +1,3 @@
-/**
- * Retry Utility - Smart retry with exponential backoff
- * Used by dashboard and notification services
- */
-
-/**
- * Retry a function with exponential backoff
- * Retries on 401 errors (session not yet established) or network errors
- */
 export async function fetchWithRetry<T>(
     fn: () => Promise<T>,
     options: {
@@ -48,9 +39,6 @@ export async function fetchWithRetry<T>(
     throw lastError;
 }
 
-/**
- * Check if response is a 401 error and throw appropriately
- */
 export function checkAuthError(response: Response): void {
     if (response.status === 401) {
         const error = new Error(`Auth failed: ${response.status}`);

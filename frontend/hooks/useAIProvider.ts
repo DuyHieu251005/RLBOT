@@ -1,6 +1,3 @@
-/**
- * useAIProvider Hook - AI Provider and Prompts Cache Management
- */
 import { useState, useCallback, useEffect } from 'react';
 import { AIProvider } from '../services/api';
 

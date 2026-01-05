@@ -1,7 +1,3 @@
-/**
- * useKnowledgeBases - Custom hook for knowledge base state management
- * Extracted from AppContext to reduce complexity
- */
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { logger } from "../utils/logger";

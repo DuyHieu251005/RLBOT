@@ -1,6 +1,3 @@
-/**
- * Bot Service - All bot-related API calls
- */
 import { BotData } from "../types";
 import { BACKEND_URL, getAuthToken } from "./apiHelpers";
 import { AI_MODELS } from "../constants";
@@ -8,10 +5,6 @@ import { AI_MODELS } from "../constants";
 // Default AI provider constant
 const DEFAULT_AI_PROVIDER = AI_MODELS.GEMINI.provider;
 
-
-/**
- * Create bot on backend
- */
 export async function createBotOnBackend(
     botData: BotData,
 ): Promise<{ success: boolean; id?: string; message?: string }> {
@@ -54,9 +47,6 @@ export async function createBotOnBackend(
     }
 }
 
-/**
- * Get user's bots (owned + shared)
- */
 export async function getUserBots(userId: string): Promise<BotData[]> {
     try {
         const token = await getAuthToken();
@@ -95,9 +85,6 @@ export async function getUserBots(userId: string): Promise<BotData[]> {
     }
 }
 
-/**
- * Share bot with another user or group
- */
 export async function shareBotWithUser(
     botId: string,
     email?: string,
@@ -141,9 +128,6 @@ export async function shareBotWithUser(
     }
 }
 
-/**
- * Update bot on backend
- */
 export async function updateBotOnBackend(
     botId: string,
     botData: any,
@@ -199,9 +183,6 @@ export async function updateBotOnBackend(
     }
 }
 
-/**
- * Delete bot from backend
- */
 export async function deleteBotFromBackend(
     botId: string,
 ): Promise<{ success: boolean; message?: string }> {
@@ -241,9 +222,6 @@ export async function deleteBotFromBackend(
     }
 }
 
-/**
- * Unshare bot with user
- */
 export async function unshareBotWithUser(
     botId: string,
     userId: string,
@@ -280,9 +258,6 @@ export async function unshareBotWithUser(
     }
 }
 
-/**
- * Unshare bot with group
- */
 export async function unshareBotWithGroup(
     botId: string,
     groupId: string,
@@ -318,9 +293,6 @@ export async function unshareBotWithGroup(
     }
 }
 
-/**
- * Leave a shared bot (for shared users to remove themselves)
- */
 export async function leaveSharedBot(
     botId: string,
 ): Promise<{ success: boolean; message?: string }> {

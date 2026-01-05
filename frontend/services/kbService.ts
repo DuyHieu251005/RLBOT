@@ -1,11 +1,5 @@
-/**
- * Knowledge Base Service - All KB-related API calls
- */
 import { BACKEND_URL, getAuthToken } from "./apiHelpers";
 
-/**
- * File metadata in a Knowledge Base
- */
 export interface KBFile {
     id: string;
     filename: string;
@@ -17,9 +11,6 @@ export interface KBFile {
     uploaded_at: string;
 }
 
-/**
- * Get knowledge bases from backend (filtered by user)
- */
 export async function getKnowledgeBasesFromBackend(
     userId: string,
 ): Promise<any[]> {
@@ -44,9 +35,6 @@ export async function getKnowledgeBasesFromBackend(
     }
 }
 
-/**
- * Create Knowledge Base on backend
- */
 export async function createKnowledgeBaseOnBackend(
     userId: string,
     name: string,
@@ -83,9 +71,6 @@ export async function createKnowledgeBaseOnBackend(
     }
 }
 
-/**
- * Update Knowledge Base on backend
- */
 export async function updateKnowledgeBaseOnBackend(
     userId: string,
     kbId: string,
@@ -122,9 +107,6 @@ export async function updateKnowledgeBaseOnBackend(
     }
 }
 
-/**
- * Delete Knowledge Base from backend
- */
 export async function deleteKnowledgeBaseFromBackend(
     userId: string,
     kbId: string,
@@ -151,9 +133,6 @@ export async function deleteKnowledgeBaseFromBackend(
     }
 }
 
-/**
- * Upload file to Knowledge Base (chunking + indexing)
- */
 export async function uploadPDFToBackend(
     file: File,
     knowledgeBaseId: string,
@@ -200,9 +179,6 @@ export async function uploadPDFToBackend(
     }
 }
 
-/**
- * Upload text directly to backend
- */
 export async function uploadTextToBackend(
     kbId: string,
     text: string,
@@ -240,9 +216,6 @@ export async function uploadTextToBackend(
     }
 }
 
-/**
- * Delete a file from Knowledge Base
- */
 export async function deleteFileFromKnowledgeBase(
     kbId: string,
     filename: string,
@@ -276,9 +249,6 @@ export async function deleteFileFromKnowledgeBase(
     }
 }
 
-/**
- * Get files in a Knowledge Base
- */
 export async function getKnowledgeBaseFiles(kbId: string): Promise<KBFile[]> {
     try {
         const token = await getAuthToken();

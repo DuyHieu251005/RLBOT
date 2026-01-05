@@ -1,8 +1,3 @@
-/**
- * useDashboardData - Composite hook for dashboard state management
- * Manages bots, knowledge bases, and groups with unified loading
- * Extracted from AppContext to reduce complexity
- */
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { logger } from "../utils/logger";

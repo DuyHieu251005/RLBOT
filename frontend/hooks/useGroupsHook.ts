@@ -1,7 +1,4 @@
-/**
- * useGroupsHook - Custom hook for group state management
- * Extracted from AppContext to reduce complexity
- */
+
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { logger } from "../utils/logger";
