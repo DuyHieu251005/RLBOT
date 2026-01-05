@@ -353,7 +353,7 @@ export function CreateKnowledgeModal({
     onClose();
   };
 
-  if (!isOpen) return null;
+  // if (!isOpen) return null; // Removed to allow AnimatePresence to handle exit animations
 
   // Upload Progress Overlay (Full screen blocker during file processing)
   const UploadProgressOverlay = uploadProgress && (

@@ -202,7 +202,7 @@ export function CreateBotModal({
     [onCreateKB]
   );
 
-  if (!isOpen) return null;
+  // if (!isOpen) return null; // Removed to allow AnimatePresence to handle exit animations
 
   return (
     <>

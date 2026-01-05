@@ -202,9 +202,12 @@ export function Groups({ groups, onCreateGroup, onDeleteGroup, isAuthenticated }
         isOpen={isCreating}
         onClose={() => setIsCreating(false)}
         title={
-          <span>
-            NEW <span className="text-[#9D4EDD]">GROUP</span>
-          </span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#2A1B35] border border-[#9D4EDD]/50 flex items-center justify-center">
+              <Users className="w-5 h-5 text-[#9D4EDD]" />
+            </div>
+            <span>CREATE NEW GROUP</span>
+          </div>
         }
         description="Establish a new center of intelligence"
       >
@@ -216,7 +219,7 @@ export function Groups({ groups, onCreateGroup, onDeleteGroup, isAuthenticated }
               placeholder="Enter group name..."
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}
-              className="w-full px-4 py-3 bg-[#0F0F0F] border border-[#5A4635] rounded-lg text-[#E8DCC8] placeholder-[#5A4635] focus:border-[#9D4EDD] focus:outline-none transition-all"
+              className="w-full px-4 py-3 bg-[#0F0F0F] border border-[#5A4635] rounded-xl text-[#E8DCC8] placeholder-[#5A4635] focus:border-[#9D4EDD] focus:outline-none transition-all"
             />
           </div>
 
@@ -227,7 +230,7 @@ export function Groups({ groups, onCreateGroup, onDeleteGroup, isAuthenticated }
               value={newGroupDescription}
               onChange={(e) => setNewGroupDescription(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 bg-[#0F0F0F] border border-[#5A4635] rounded-lg text-[#E8DCC8] placeholder-[#5A4635] focus:border-[#9D4EDD] focus:outline-none transition-all resize-none"
+              className="w-full px-4 py-3 bg-[#0F0F0F] border border-[#5A4635] rounded-xl text-[#E8DCC8] placeholder-[#5A4635] focus:border-[#9D4EDD] focus:outline-none transition-all resize-none"
             />
           </div>
 
@@ -239,7 +242,7 @@ export function Groups({ groups, onCreateGroup, onDeleteGroup, isAuthenticated }
                 placeholder="user@example.com"
                 value={memberEmailInput}
                 onChange={(e) => setMemberEmailInput(e.target.value)}
-                className="flex-1 px-4 py-3 bg-[#0F0F0F] border border-[#5A4635] rounded-lg text-[#E8DCC8] placeholder-[#5A4635] focus:border-[#9D4EDD] focus:outline-none transition-all"
+                className="flex-1 px-4 py-3 bg-[#0F0F0F] border border-[#5A4635] rounded-xl text-[#E8DCC8] placeholder-[#5A4635] focus:border-[#9D4EDD] focus:outline-none transition-all"
               />
               <button
                 type="button"
@@ -250,7 +253,7 @@ export function Groups({ groups, onCreateGroup, onDeleteGroup, isAuthenticated }
                     setMemberEmailInput("");
                   }
                 }}
-                className="px-4 bg-[#9D4EDD]/10 border border-[#9D4EDD]/30 text-[#9D4EDD] rounded-lg font-bold hover:bg-[#9D4EDD]/20 transition-all"
+                className="px-4 bg-[#9D4EDD]/10 border border-[#9D4EDD]/30 text-[#9D4EDD] rounded-xl font-bold hover:bg-[#9D4EDD]/20 transition-all"
               >
                 ADD
               </button>
@@ -259,7 +262,7 @@ export function Groups({ groups, onCreateGroup, onDeleteGroup, isAuthenticated }
             {newGroupMembers.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
                 {newGroupMembers.map((email, idx) => (
-                  <div key={idx} className="flex items-center gap-2 bg-[#9D4EDD]/10 border border-[#9D4EDD]/20 text-[#E8DCC8] px-3 py-1 rounded-lg text-xs">
+                  <div key={idx} className="flex items-center gap-2 bg-[#9D4EDD]/10 border border-[#9D4EDD]/20 text-[#E8DCC8] px-3 py-1 rounded-xl text-xs">
                     <span className="truncate max-w-[120px]">{email}</span>
                     <button onClick={() => setNewGroupMembers(prev => prev.filter((_, i) => i !== idx))}
                       className="hover:text-red-400 transition-colors"
@@ -276,16 +279,16 @@ export function Groups({ groups, onCreateGroup, onDeleteGroup, isAuthenticated }
         <ModalFooter>
           <button
             onClick={() => setIsCreating(false)}
-            className="flex-1 py-2.5 border border-[#5A4635] text-[#9B9380] rounded-lg font-bold hover:bg-[#2B2B2B] hover:text-[#E8DCC8] transition-all"
+            className="flex-1 py-3 border border-[#5A4635] text-[#9B9380] rounded-xl font-bold hover:bg-[#2B2B2B] hover:text-[#E8DCC8] transition-all"
           >
-            ABORT
+            CANCEL
           </button>
           <button
             onClick={handleCreateGroup}
             disabled={!newGroupName.trim()}
-            className="flex-1 py-2.5 bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 rounded-lg font-bold hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all disabled:opacity-30 shadow-[0_0_15px_rgba(157,78,221,0.15)]"
+            className="flex-1 py-3 bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 rounded-xl font-bold hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all disabled:opacity-30 shadow-[0_0_15px_rgba(157,78,221,0.15)]"
           >
-            ESTABLISH
+            CREATE GROUP
           </button>
         </ModalFooter>
       </BaseModal>
