@@ -383,203 +383,202 @@ export function CreateKnowledgeModal({
   return (
     <>
       {UploadProgressOverlay}
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-        <BaseModal
-          isOpen={isOpen}
-          onClose={onClose}
-          title={
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#2A1B35] border border-[#9D4EDD]/50 flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-[#9D4EDD]" />
-              </div>
-              <span>{editingKB ? "EDIT KNOWLEDGE BASE" : "CREATE NEW KNOWLEDGE BASE"}</span>
+      <BaseModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#2A1B35] border border-[#9D4EDD]/50 flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-[#9D4EDD]" />
             </div>
-          }
-          description="Upload documents to train your AI assistant."
-          maxWidth="max-w-lg"
-        >
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest px-1">
-                Knowledge Base Name
-              </label>
-              <input
-                type="text"
-                value={kbName}
-                onChange={(e) => setKbName(e.target.value)}
-                className="w-full bg-[#0F0F0F] border border-[#5A4635] p-3 text-[#E8DCC8] focus:border-[#9D4EDD] focus:outline-none rounded-xl placeholder-[#5A4635] transition-colors"
-                placeholder="e.g. Server Rules v1.0"
-                style={{ fontFamily: "Noto Serif, serif" }}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest px-1">
-                Upload Source Files
-              </label>
-              <div
-                className={`relative border-dashed border-2 rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group
-                  ${dragActive
-                    ? "border-[#9D4EDD] bg-[#9D4EDD]/10"
-                    : "border-[#5A4635] bg-[#0F0F0F] hover:border-[#9B9380]"
-                  }`}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                onClick={() => inputRef.current?.click()}
-              >
-                <input
-                  ref={inputRef}
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={handleChange}
-                />
-
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${dragActive ? "bg-[#9D4EDD]/20 text-[#9D4EDD]" : "bg-[#2A1B35] text-[#9B9380] group-hover:text-[#E8DCC8]"}`}
-                >
-                  <Upload className="w-6 h-6" />
-                </div>
-
-                <p className="text-[#E8DCC8] font-medium mb-1 weathered-text">
-                  Click to browse or drag file here
-                </p>
-                <p className="text-[#5A4635] text-xs">
-                  Supported: PDF, DOCX, TXT
-                </p>
-                <p className="text-[#4A9D4E] text-[10px] mt-1">
-                  ✅ PDF files will be processed and synced to Database
-                </p>
-              </div>
-            </div>
-
-            {existingFiles.length > 0 && (
-              <div className="space-y-2 mb-4 animate-in slide-in-from-bottom-2">
-                <div className="flex justify-between items-center px-1">
-                  <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest">
-                    Existing Files (Synced)
-                  </label>
-                  <span className="text-[10px] text-[#9D4EDD] font-bold">
-                    {existingFiles.length} files
-                  </span>
-                </div>
-                <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                  {existingFiles.map((file, idx) => (
-                    <div
-                      key={`existing-${idx}`}
-                      className="group flex items-center justify-between p-3 bg-[#1F1F1F] border border-[#5A4635]/50 rounded-xl hover:border-[#9D4EDD]/30 transition-all"
-                    >
-                      <div className="flex items-center gap-3 overflow-hidden">
-                        {file.status === "completed" && (
-                          <CheckCircle2 className="w-4 h-4 text-[#4A9D4E] flex-shrink-0" />
-                        )}
-                        {file.status === "processing" && (
-                          <Loader2 className="w-4 h-4 text-[#FFD700] animate-spin flex-shrink-0" />
-                        )}
-                        {file.status === "failed" && (
-                          <AlertCircle className="w-4 h-4 text-[#FF4444] flex-shrink-0" />
-                        )}
-
-                        <div className="flex flex-col">
-                          <span className="text-sm text-[#E8DCC8] truncate font-sans max-w-[200px]">
-                            {file.filename}
-                          </span>
-                          <span className="text-[10px] text-[#5A4635]">
-                            {file.status === "completed"
-                              ? "Synced"
-                              : file.status === "failed"
-                                ? "Failed"
-                                : "Processing..."}
-                            {file.status === "failed" &&
-                              file.error_message &&
-                              ` - ${file.error_message.substring(0, 20)}...`}
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteExistingFile(file.filename)}
-                        disabled={deletingFile === file.filename}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 text-[#5A4635] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all disabled:opacity-50"
-                        title="Delete file from knowledge base"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {files.length > 0 && (
-              <div className="space-y-2 animate-in slide-in-from-bottom-2">
-                <div className="flex justify-between items-center px-1">
-                  <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest">
-                    Selected Files
-                  </label>
-                  <span className="text-[10px] text-[#9D4EDD] font-bold">
-                    {files.length} files ready
-                  </span>
-                </div>
-                <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                  {files.map((file, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-3 bg-[#1F1F1F] border border-[#5A4635]/50 rounded-xl"
-                    >
-                      <div className="flex items-center gap-3 overflow-hidden">
-                        <FileText className="w-4 h-4 text-[#9D4EDD] flex-shrink-0" />
-                        <div className="flex flex-col">
-                          <span className="text-sm text-[#E8DCC8] truncate font-sans max-w-[200px]">
-                            {file.name}
-                          </span>
-                          <span className="text-[10px] text-[#5A4635]">
-                            {(file.size / 1024).toFixed(0)} KB
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => removeFile(idx)}
-                        className="p-1.5 text-[#5A4635] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <span>{editingKB ? "EDIT KNOWLEDGE BASE" : "CREATE NEW KNOWLEDGE BASE"}</span>
+          </div>
+        }
+        description="Upload documents to train your AI assistant."
+        maxWidth="max-w-lg"
+      >
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest px-1">
+              Knowledge Base Name
+            </label>
+            <input
+              type="text"
+              value={kbName}
+              onChange={(e) => setKbName(e.target.value)}
+              className="w-full bg-[#0F0F0F] border border-[#5A4635] p-3 text-[#E8DCC8] focus:border-[#9D4EDD] focus:outline-none rounded-xl placeholder-[#5A4635] transition-colors"
+              placeholder="e.g. Server Rules v1.0"
+              style={{ fontFamily: "Noto Serif, serif" }}
+            />
           </div>
 
-          <ModalFooter>
-            <button
-              onClick={onClose}
-              disabled={isProcessing || uploadProgress !== null}
-              className="flex-1 py-3 border border-[#5A4635] text-[#9B9380] rounded-xl font-bold hover:bg-[#2B2B2B] hover:text-[#E8DCC8] transition-all disabled:opacity-50"
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest px-1">
+              Upload Source Files
+            </label>
+            <div
+              className={`relative border-dashed border-2 rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group
+                  ${dragActive
+                  ? "border-[#9D4EDD] bg-[#9D4EDD]/10"
+                  : "border-[#5A4635] bg-[#0F0F0F] hover:border-[#9B9380]"
+                }`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              onClick={() => inputRef.current?.click()}
             >
-              Cancel
-            </button>
-            <button
-              onClick={handleCreate}
-              disabled={isProcessing || !kbName.trim() || uploadProgress !== null}
-              className="flex-1 py-3 bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 rounded-xl font-bold hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all shadow-[0_0_15px_rgba(157,78,221,0.15)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  {editingKB ? "Update Base" : "Create Base"}
-                </>
-              )}
-            </button>
-          </ModalFooter>
-        </BaseModal>
-      </div>
+              <input
+                ref={inputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={handleChange}
+              />
+
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${dragActive ? "bg-[#9D4EDD]/20 text-[#9D4EDD]" : "bg-[#2A1B35] text-[#9B9380] group-hover:text-[#E8DCC8]"}`}
+              >
+                <Upload className="w-6 h-6" />
+              </div>
+
+              <p className="text-[#E8DCC8] font-medium mb-1 weathered-text">
+                Click to browse or drag file here
+              </p>
+              <p className="text-[#5A4635] text-xs">
+                Supported: PDF, DOCX, TXT
+              </p>
+              <p className="text-[#4A9D4E] text-[10px] mt-1">
+                ✅ PDF files will be processed and synced to Database
+              </p>
+            </div>
+          </div>
+
+          {existingFiles.length > 0 && (
+            <div className="space-y-2 mb-4 animate-in slide-in-from-bottom-2">
+              <div className="flex justify-between items-center px-1">
+                <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest">
+                  Existing Files (Synced)
+                </label>
+                <span className="text-[10px] text-[#9D4EDD] font-bold">
+                  {existingFiles.length} files
+                </span>
+              </div>
+              <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                {existingFiles.map((file, idx) => (
+                  <div
+                    key={`existing-${idx}`}
+                    className="group flex items-center justify-between p-3 bg-[#1F1F1F] border border-[#5A4635]/50 rounded-xl hover:border-[#9D4EDD]/30 transition-all"
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      {file.status === "completed" && (
+                        <CheckCircle2 className="w-4 h-4 text-[#4A9D4E] flex-shrink-0" />
+                      )}
+                      {file.status === "processing" && (
+                        <Loader2 className="w-4 h-4 text-[#FFD700] animate-spin flex-shrink-0" />
+                      )}
+                      {file.status === "failed" && (
+                        <AlertCircle className="w-4 h-4 text-[#FF4444] flex-shrink-0" />
+                      )}
+
+                      <div className="flex flex-col">
+                        <span className="text-sm text-[#E8DCC8] truncate font-sans max-w-[200px]">
+                          {file.filename}
+                        </span>
+                        <span className="text-[10px] text-[#5A4635]">
+                          {file.status === "completed"
+                            ? "Synced"
+                            : file.status === "failed"
+                              ? "Failed"
+                              : "Processing..."}
+                          {file.status === "failed" &&
+                            file.error_message &&
+                            ` - ${file.error_message.substring(0, 20)}...`}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteExistingFile(file.filename)}
+                      disabled={deletingFile === file.filename}
+                      className="opacity-0 group-hover:opacity-100 p-1.5 text-[#5A4635] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all disabled:opacity-50"
+                      title="Delete file from knowledge base"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {files.length > 0 && (
+            <div className="space-y-2 animate-in slide-in-from-bottom-2">
+              <div className="flex justify-between items-center px-1">
+                <label className="text-[10px] font-black text-[#9B9380] uppercase tracking-widest">
+                  Selected Files
+                </label>
+                <span className="text-[10px] text-[#9D4EDD] font-bold">
+                  {files.length} files ready
+                </span>
+              </div>
+              <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                {files.map((file, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 bg-[#1F1F1F] border border-[#5A4635]/50 rounded-xl"
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <FileText className="w-4 h-4 text-[#9D4EDD] flex-shrink-0" />
+                      <div className="flex flex-col">
+                        <span className="text-sm text-[#E8DCC8] truncate font-sans max-w-[200px]">
+                          {file.name}
+                        </span>
+                        <span className="text-[10px] text-[#5A4635]">
+                          {(file.size / 1024).toFixed(0)} KB
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeFile(idx)}
+                      className="p-1.5 text-[#5A4635] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <ModalFooter>
+          <button
+            onClick={onClose}
+            disabled={isProcessing || uploadProgress !== null}
+            className="flex-1 py-3 border border-[#5A4635] text-[#9B9380] rounded-xl font-bold hover:bg-[#2B2B2B] hover:text-[#E8DCC8] transition-all disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleCreate}
+            disabled={isProcessing || !kbName.trim() || uploadProgress !== null}
+            className="flex-1 py-3 bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 rounded-xl font-bold hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all shadow-[0_0_15px_rgba(157,78,221,0.15)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-4 h-4" />
+                {editingKB ? "Update Base" : "Create Base"}
+              </>
+            )}
+          </button>
+        </ModalFooter>
+      </BaseModal>
+
     </>
   );
 }
