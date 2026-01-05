@@ -26,11 +26,14 @@ async def create_chat_session(
             msg_dict["id"] = str(uuid.uuid4())
         messages_with_ids.append(msg_dict)
 
-    # Create session (messages column removed)
+    sanitized_bot_id = session_data.bot_id
+    if sanitized_bot_id in ["gemini-pro", "deepseek-r1t2"]:
+        sanitized_bot_id = None
+
     new_session = ChatSession(
         title=session_data.title,
         owner_id=session_data.owner_id,
-        bot_id=session_data.bot_id,
+        bot_id=sanitized_bot_id,
     )
     session.add(new_session)
     session.commit()

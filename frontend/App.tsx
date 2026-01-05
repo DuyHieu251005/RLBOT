@@ -382,7 +382,19 @@ function AppContent() {
         <HistoryDrawer
           isOpen={isHistoryOpen}
           onClose={() => setIsHistoryOpen(false)}
-          sessions={activeBot ? sessions.filter(s => s.botId === activeBot.id) : sessions}
+          sessions={
+            activeBot
+              ? sessions.filter(s => {
+                const isSystemBot = activeBot.id === "gemini-pro" || activeBot.id === "deepseek-r1t2";
+                if (isSystemBot) {
+                  // Show general chats (no botId) AND specific model chats
+                  return !s.botId || s.botId === activeBot.id;
+                }
+                // Custom bots: strict match
+                return s.botId === activeBot.id;
+              })
+              : sessions
+          }
           onSelectSession={setActiveSessionId}
           onDeleteSession={handleDeleteSession}
           isAuthenticated={isAuthenticated}
