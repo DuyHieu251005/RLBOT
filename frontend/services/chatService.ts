@@ -1,15 +1,9 @@
-/**
-* Chat Service - AI chat and session management
-*/
 import { DEFAULT_RAG_INSTRUCTIONS } from "../constants";
 import { BACKEND_URL, getAuthToken, detectLanguage } from "./apiHelpers";
 
 // AI Provider type
 export type AIProvider = "gemini" | "openrouter";
 
-/**
- * Chat session data structure
- */
 export interface ChatSessionData {
     id?: string;
     title: string;
@@ -25,9 +19,6 @@ export interface ChatSessionData {
     updated_at?: Date;
 }
 
-/**
- * Expand keywords using AI
- */
 async function expandKeywords(userQuery: string): Promise<string[]> {
     try {
         const response = await fetch(`${BACKEND_URL}/api/gemini/generate`, {
@@ -70,9 +61,6 @@ Now extract and expand keywords:`,
     }
 }
 
-/**
- * Retrieve context from backend (RAG retrieval)
- */
 export async function retrieveContextFromBackend(
     query: string,
     knowledgeBaseIds?: string[],
@@ -102,9 +90,6 @@ export async function retrieveContextFromBackend(
     }
 }
 
-/**
- * Get available AI providers from backend
- */
 export async function getAIProviders(): Promise<{
     providers: AIProvider[];
     default: AIProvider;
@@ -126,10 +111,6 @@ export async function getAIProviders(): Promise<{
     }
 }
 
-/**
- * Get AI response using combined endpoint (faster)
- * Uses single backend call that handles RAG + keyword expansion + AI generation
- */
 export async function getGeminiResponse(
     prompt: string,
     systemInstructions?: string,
@@ -249,9 +230,6 @@ export async function getGeminiResponse(
     return "Something went wrong.";
 }
 
-/**
- * Get messages for a specific session
- */
 export async function getSessionMessages(sessionId: string): Promise<any[]> {
     try {
         const token = await getAuthToken();
@@ -274,9 +252,6 @@ export async function getSessionMessages(sessionId: string): Promise<any[]> {
     }
 }
 
-/**
- * Get user's chat sessions, optionally filtered by bot
- */
 export async function getUserChatSessions(
     userId: string,
     botId?: string,
@@ -309,9 +284,6 @@ export async function getUserChatSessions(
     }
 }
 
-/**
- * Save chat session to backend
- */
 export async function saveChatSession(
     sessionData: ChatSessionData,
 ): Promise<{ success: boolean; id?: string; message?: string }> {
@@ -343,9 +315,6 @@ export async function saveChatSession(
     }
 }
 
-/**
- * Update chat session
- */
 export async function updateChatSession(
     sessionId: string,
     sessionData: Partial<ChatSessionData>,
@@ -381,9 +350,6 @@ export async function updateChatSession(
     }
 }
 
-/**
- * Delete chat session
- */
 export async function deleteChatSession(
     sessionId: string,
 ): Promise<{ success: boolean; message?: string }> {
@@ -416,9 +382,6 @@ export async function deleteChatSession(
     }
 }
 
-/**
- * Add a single message to an existing session (Append-only, optimized)
- */
 export async function addMessageToSession(
     sessionId: string,
     role: string,

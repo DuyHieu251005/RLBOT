@@ -1,11 +1,5 @@
-/**
- * Group Service - All group-related API calls
- */
 import { BACKEND_URL, getAuthToken } from "./apiHelpers";
 
-/**
- * Group data structure
- */
 export interface GroupData {
     id: string;
     name: string;
@@ -17,9 +11,6 @@ export interface GroupData {
     ownerId?: string;
 }
 
-/**
- * Get user's groups
- */
 export async function getUserGroups(userId: string): Promise<GroupData[]> {
     try {
         const token = await getAuthToken();
@@ -45,9 +36,6 @@ export async function getUserGroups(userId: string): Promise<GroupData[]> {
     }
 }
 
-/**
- * Create a new group
- */
 export async function createGroup(
     group: Omit<GroupData, "id" | "createdAt" | "memberCount" | "botCount"> & {
         ownerId: string;
@@ -85,9 +73,6 @@ export async function createGroup(
     }
 }
 
-/**
- * Delete a group
- */
 export async function deleteGroup(groupId: string): Promise<boolean> {
     try {
         const token = await getAuthToken();
@@ -107,9 +92,6 @@ export async function deleteGroup(groupId: string): Promise<boolean> {
     }
 }
 
-/**
- * Invite a user to a group
- */
 export async function inviteUserToGroup(
     groupId: string,
     email: string,
@@ -143,9 +125,6 @@ export async function inviteUserToGroup(
     }
 }
 
-/**
- * Leave a group
- */
 export async function leaveGroup(
     groupId: string,
 ): Promise<{ success: boolean; message?: string }> {
@@ -173,9 +152,6 @@ export async function leaveGroup(
     }
 }
 
-/**
- * Remove a member from a group
- */
 export async function removeMemberFromGroup(
     groupId: string,
     email: string,

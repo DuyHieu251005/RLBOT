@@ -1,16 +1,9 @@
 import { logger } from '../utils/logger';
-/**
- * API Helper Functions - Shared utilities for all service modules
- */
 import { supabase } from "../supabaseClient";
 
 // Backend URL from environment or default
 export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
-/**
- * Get auth token from Supabase session with retry
- * Retries up to 3 times with exponential backoff to handle race conditions after login
- */
 export async function getAuthToken(retries: number = 3): Promise<string | null> {
     for (let attempt = 0; attempt < retries; attempt++) {
         try {
@@ -43,9 +36,6 @@ export async function getAuthToken(retries: number = 3): Promise<string | null> 
 }
 
 
-/**
- * Get auth headers with Supabase token
- */
 export async function getAuthHeaders(): Promise<Record<string, string>> {
     const token = await getAuthToken();
     if (!token) {
@@ -54,17 +44,11 @@ export async function getAuthHeaders(): Promise<Record<string, string>> {
     return { Authorization: `Bearer ${token}` };
 }
 
-/**
- * Check if user is authenticated
- */
 export async function isUserAuthenticated(): Promise<boolean> {
     const token = await getAuthToken();
     return !!token;
 }
 
-/**
- * Language detection helper for multilingual support
- */
 export function detectLanguage(text: string): string {
     // Detect Vietnamese
     if (

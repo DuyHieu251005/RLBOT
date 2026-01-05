@@ -1,5 +1,3 @@
-// Utility functions for localStorage operations
-
 const STORAGE_VERSION = '1.0';
 
 export function saveToStorage<T>(key: string, data: T): boolean {
@@ -21,14 +19,14 @@ export function loadFromStorage<T>(key: string, defaultValue: T): T {
   try {
     const item = localStorage.getItem(key);
     if (!item) return defaultValue;
-    
+
     const parsed = JSON.parse(item);
-    
+
     // Version check - could add migration logic here
     if (parsed.version !== STORAGE_VERSION) {
       console.warn(`Storage version mismatch for ${key}`);
     }
-    
+
     return parsed.data || defaultValue;
   } catch (error) {
     console.error(`Error loading from localStorage (${key}):`, error);

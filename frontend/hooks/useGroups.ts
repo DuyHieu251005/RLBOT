@@ -1,6 +1,3 @@
-/**
- * useGroups Hook - Groups state management
- */
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { createGroup, deleteGroup as deleteGroupAPI } from '../services/api';
