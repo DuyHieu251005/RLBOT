@@ -562,7 +562,7 @@ export function CreateKnowledgeModal({
           <button
             onClick={handleCreate}
             disabled={isProcessing || !kbName.trim() || uploadProgress !== null}
-            className="flex-1 py-3 bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 rounded-xl font-bold hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all shadow-[0_0_15px_rgba(157,78,221,0.15)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-3 bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 rounded-xl font-bold hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all duration-300 shadow-[0_0_15px_rgba(157,78,221,0.3)] hover:shadow-[0_0_25px_rgba(157,78,221,0.5)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isProcessing ? (
               <>

@@ -286,7 +286,7 @@ export function Groups({ groups, onCreateGroup, onDeleteGroup, isAuthenticated }
           <button
             onClick={handleCreateGroup}
             disabled={!newGroupName.trim()}
-            className="flex-1 py-3 bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 rounded-xl font-bold hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all disabled:opacity-30 shadow-[0_0_15px_rgba(157,78,221,0.15)]"
+            className="flex-1 py-3 bg-[#2A1B35] text-[#9D4EDD] border border-[#9D4EDD]/50 rounded-xl font-bold hover:bg-[#9D4EDD] hover:text-[#1a1a1a] transition-all duration-300 disabled:opacity-30 shadow-[0_0_15px_rgba(157,78,221,0.3)] hover:shadow-[0_0_25px_rgba(157,78,221,0.5)]"
           >
             CREATE GROUP
           </button>
