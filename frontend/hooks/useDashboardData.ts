@@ -127,6 +127,13 @@ export function useDashboardData({
         return () => { mounted = false; };
     }, [isAuthenticated, user?.id]);
 
+    // ============ PERSIST ACTIVE BOT ============
+    useEffect(() => {
+        if (activeBot?.id) {
+            localStorage.setItem("last_active_bot_id", activeBot.id);
+        }
+    }, [activeBot]);
+
     // ============ BOT AUTO-SELECT ============
     useEffect(() => {
         if (activeBot) {
@@ -136,19 +143,42 @@ export function useDashboardData({
 
         if (bots.length > 0 && !activeBot) {
             if (isAuthenticated && user) {
-                const accessibleBot = bots.find((bot) => {
-                    const isOwner = bot.ownerId === user.id || !bot.ownerId;
-                    const isSharedDirectly = bot.sharedWith?.includes(user.id) || bot.sharedWith?.includes(user.email);
-                    const isSharedViaGroup = bot.sharedWithGroups?.some((groupId) =>
+                // [MODIFIED] Try to restore last active bot
+                const lastBotId = localStorage.getItem("last_active_bot_id");
+                let targetBot = lastBotId ? bots.find(b => b.id === lastBotId) : null;
+
+                // Fallback: Check accessibility if cached bot is not found or valid
+                if (!targetBot) {
+                    targetBot = bots.find((bot) => {
+                        const isOwner = bot.ownerId === user.id || !bot.ownerId;
+                        const isSharedDirectly = bot.sharedWith?.includes(user.id) || bot.sharedWith?.includes(user.email);
+                        const isSharedViaGroup = bot.sharedWithGroups?.some((groupId) =>
+                            groups.some((userGroup) => userGroup.id === groupId)
+                        ) || false;
+                        return isOwner || isSharedDirectly || isSharedViaGroup;
+                    });
+                }
+
+                // Final Check: ensure the restored targetBot is actually accessible
+                if (targetBot) {
+                    const isOwner = targetBot.ownerId === user.id || !targetBot.ownerId;
+                    const isSharedDirectly = targetBot.sharedWith?.includes(user.id) || targetBot.sharedWith?.includes(user.email);
+                    const isSharedViaGroup = targetBot.sharedWithGroups?.some((groupId) =>
                         groups.some((userGroup) => userGroup.id === groupId)
                     ) || false;
-                    return isOwner || isSharedDirectly || isSharedViaGroup;
-                });
-                if (accessibleBot) {
-                    logger.log(`✅ Auto-selecting accessible bot: ${accessibleBot.name}`);
-                    setActiveBot(accessibleBot);
+
+                    if (isOwner || isSharedDirectly || isSharedViaGroup) {
+                        logger.log(`✅ Auto-selecting bot: ${targetBot.name}`);
+                        setActiveBot(targetBot);
+                    } else {
+                        // If cached bot is no longer accessible, fallback to first one
+                        if (bots.length > 0) setActiveBot(bots[0]);
+                    }
+                } else if (bots.length > 0) {
+                    setActiveBot(bots[0]);
                 }
             } else {
+                // Guest mode
                 setActiveBot(bots[0]);
             }
         } else if (bots.length === 0 && activeBot) {

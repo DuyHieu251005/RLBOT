@@ -78,7 +78,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ============ SESSIONS STATE (local to AppContext) ============
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [sessionsLoaded, setSessionsLoaded] = useState(false);
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(() => {
+    return localStorage.getItem("active_session_id");
+  });
+
+  useEffect(() => {
+    if (activeSessionId) {
+      localStorage.setItem("active_session_id", activeSessionId);
+    } else {
+      localStorage.removeItem("active_session_id");
+    }
+  }, [activeSessionId]);
+
+  useEffect(() => {
+    if (!dashboard.activeBot) return;
+
+    const currentSession = sessions.find(s => s.id === activeSessionId);
+
+    if (currentSession && currentSession.botId !== dashboard.activeBot.id) {
+      logger.log(`🔄 Bot changed to [${dashboard.activeBot.name}]. Switching context...`);
+
+      const botSessions = sessions.filter(s => s.botId === dashboard.activeBot?.id);
+      if (botSessions.length > 0) {
+        botSessions.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        setActiveSessionId(botSessions[0].id);
+      } else {
+        setActiveSessionId(null);
+      }
+    }
+  }, [dashboard.activeBot, activeSessionId, sessions]);
 
   // ============ AI PROVIDER STATE ============
   const [aiProvider, setAIProvider] = useState<AIProvider>(() => {
@@ -126,6 +155,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 return backendSession;
               });
             });
+
+            // [NEW] If activeSessionId was restored from localStorage, verify it still exists in the fetched list
+            // If not, clear it to avoid phantom states.
+            const storedId = localStorage.getItem("active_session_id");
+            if (storedId && !mappedSessions.some(s => s.id === storedId)) {
+              setActiveSessionId(null);
+            }
+
           } else {
             const storageKey = `${STORAGE_KEYS.SESSIONS}_${user.id}`;
             const saved = localStorage.getItem(storageKey);
