@@ -30,6 +30,7 @@ async def create_chat_session(
     new_session = ChatSession(
         title=session_data.title,
         owner_id=session_data.owner_id,
+        bot_id=session_data.bot_id,
     )
     session.add(new_session)
     session.commit()
@@ -83,6 +84,7 @@ async def get_user_chat_sessions(user_id: str, session: DbSession = Depends(get_
                 "title": s.title,
                 "messages": msgs,  # Return list with just last message for preview
                 "owner_id": s.owner_id,
+                "bot_id": s.bot_id,
                 "created_at": s.created_at,
                 "updated_at": s.updated_at,
             }

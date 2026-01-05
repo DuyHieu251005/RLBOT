@@ -49,6 +49,7 @@ class ChatSessionCreate(BaseModel):
     title: str
     messages: List[MessageData]
     owner_id: str
+    bot_id: Optional[str] = None
 
 class ChatSessionUpdate(BaseModel):
     title: Optional[str] = None
