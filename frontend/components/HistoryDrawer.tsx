@@ -13,11 +13,11 @@ interface HistoryDrawerProps {
   onLogin: () => void;
 }
 
-export function HistoryDrawer({ 
-  isOpen, 
-  onClose, 
-  sessions, 
-  onSelectSession, 
+export function HistoryDrawer({
+  isOpen,
+  onClose,
+  sessions,
+  onSelectSession,
   onDeleteSession,
   isAuthenticated,
   onLogin
@@ -30,25 +30,23 @@ export function HistoryDrawer({
     const older: ChatSession[] = [];
 
     const now = new Date();
-    const todayStr = now.toDateString();
-    const yesterdayDate = new Date();
-    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-    const yesterdayStr = yesterdayDate.toDateString();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterdayStart = new Date(todayStart);
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
 
-    // Sắp xếp mới nhất lên đầu
-    const sortedSessions = [...sessions].sort((a, b) => 
-      new Date(b.updatedAt || b.messages[b.messages.length - 1]?.timestamp).getTime() - 
+    const sortedSessions = [...sessions].sort((a, b) =>
+      new Date(b.updatedAt || b.messages[b.messages.length - 1]?.timestamp).getTime() -
       new Date(a.updatedAt || a.messages[a.messages.length - 1]?.timestamp).getTime()
     );
 
     sortedSessions.forEach(session => {
       // Lấy thời gian update cuối hoặc tin nhắn cuối
       const dateObj = new Date(session.updatedAt || session.messages[session.messages.length - 1]?.timestamp);
-      const dateStr = dateObj.toDateString();
+      const sessionDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
 
-      if (dateStr === todayStr) {
+      if (sessionDate.getTime() === todayStart.getTime()) {
         today.push(session);
-      } else if (dateStr === yesterdayStr) {
+      } else if (sessionDate.getTime() === yesterdayStart.getTime()) {
         yesterday.push(session);
       } else {
         older.push(session);
@@ -76,37 +74,35 @@ export function HistoryDrawer({
           {session.title}
         </div>
         <div className="text-xs text-[#9B9380] truncate opacity-60 mt-0.5">
-            {session.messages[session.messages.length - 1]?.content.substring(0, 40)}...
+          {session.messages[session.messages.length - 1]?.content.substring(0, 40)}...
         </div>
       </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDeleteSession(session.id);
-          }}
-          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-sm hover:bg-[#8A1C1C]/20 text-[#9B9380] hover:text-[#8A1C1C] transition-all"
-          title="Delete chat"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </motion.div>
-    );
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDeleteSession(session.id);
+        }}
+        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-sm hover:bg-[#8A1C1C]/20 text-[#9B9380] hover:text-[#8A1C1C] transition-all"
+        title="Delete chat"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </motion.div>
+  );
 
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className={`fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 backdrop-blur-sm ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+      <div
+        className={`fixed inset-0 bg-black/60 z-40 transition-opacity duration-300 backdrop-blur-sm ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         onClick={onClose}
       />
 
       {/* Drawer Panel */}
-      <div 
-        className={`fixed top-0 right-0 h-full w-[350px] sm:w-[400px] bg-[#1a1a1a] border-l border-[#5A4635] shadow-[-20px_0_50px_rgba(0,0,0,0.7)] z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+      <div
+        className={`fixed top-0 right-0 h-full w-[350px] sm:w-[400px] bg-[#1a1a1a] border-l border-[#5A4635] shadow-[-20px_0_50px_rgba(0,0,0,0.7)] z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#5A4635] flex-shrink-0">
@@ -116,7 +112,7 @@ export function HistoryDrawer({
               History
             </h2>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 text-[#9B9380] hover:text-[#E8DCC8] hover:bg-[#2B2B2B] rounded-sm transition-all"
           >
@@ -126,21 +122,21 @@ export function HistoryDrawer({
 
         {/* Warning Banner - Chỉ hiện khi CHƯA đăng nhập */}
         {!isAuthenticated && (
-            <div className="bg-[#FFC107]/5 border-b border-[#FFC107]/20 p-4 flex gap-3 items-start animate-in fade-in slide-in-from-top-2">
-                <AlertTriangle className="w-5 h-5 text-[#FFC107] flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-[#E8DCC8]/90 font-sans leading-relaxed">
-                    History is only saved locally. <br/>
-                    <button 
-                        onClick={() => {
-                            onClose();
-                            onLogin();
-                        }}
-                        className="text-[#9D4EDD] hover:text-[#C77DFF] font-bold hover:underline"
-                    >
-                        Login to RLbot
-                    </button> to sync your chats across devices.
-                </p>
-            </div>
+          <div className="bg-[#FFC107]/5 border-b border-[#FFC107]/20 p-4 flex gap-3 items-start animate-in fade-in slide-in-from-top-2">
+            <AlertTriangle className="w-5 h-5 text-[#FFC107] flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-[#E8DCC8]/90 font-sans leading-relaxed">
+              History is only saved locally. <br />
+              <button
+                onClick={() => {
+                  onClose();
+                  onLogin();
+                }}
+                className="text-[#9D4EDD] hover:text-[#C77DFF] font-bold hover:underline"
+              >
+                Login to RLbot
+              </button> to sync your chats across devices.
+            </p>
+          </div>
         )}
 
         {/* List Content */}
@@ -157,47 +153,47 @@ export function HistoryDrawer({
             </div>
           ) : (
             <>
-                {/* Today */}
-                {groupedSessions.today.length > 0 && (
-                  <div>
-                    <h3 className="text-xs text-[#9B9380] uppercase tracking-wider mb-3 px-2 font-bold ancient-rune">
-                      Today
-                    </h3>
-                    <div className="space-y-1">
-                      {groupedSessions.today.map((session, index) => (
-                        <ChatItem key={session.id} session={session} index={index} />
-                      ))}
-                    </div>
+              {/* Today */}
+              {groupedSessions.today.length > 0 && (
+                <div>
+                  <h3 className="text-xs text-[#9B9380] uppercase tracking-wider mb-3 px-2 font-bold ancient-rune">
+                    Today
+                  </h3>
+                  <div className="space-y-1">
+                    {groupedSessions.today.map((session, index) => (
+                      <ChatItem key={session.id} session={session} index={index} />
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Yesterday */}
-                {groupedSessions.yesterday.length > 0 && (
-                  <div>
-                    <h3 className="text-xs text-[#9B9380] uppercase tracking-wider mb-3 px-2 font-bold ancient-rune">
-                      Yesterday
-                    </h3>
-                    <div className="space-y-1">
-                      {groupedSessions.yesterday.map((session, index) => (
-                        <ChatItem key={session.id} session={session} index={index} />
-                      ))}
-                    </div>
+              {/* Yesterday */}
+              {groupedSessions.yesterday.length > 0 && (
+                <div>
+                  <h3 className="text-xs text-[#9B9380] uppercase tracking-wider mb-3 px-2 font-bold ancient-rune">
+                    Yesterday
+                  </h3>
+                  <div className="space-y-1">
+                    {groupedSessions.yesterday.map((session, index) => (
+                      <ChatItem key={session.id} session={session} index={index} />
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Older */}
-                {groupedSessions.older.length > 0 && (
-                  <div>
-                    <h3 className="text-xs text-[#9B9380] uppercase tracking-wider mb-3 px-2 font-bold ancient-rune">
-                      Older
-                    </h3>
-                    <div className="space-y-1">
-                      {groupedSessions.older.map((session, index) => (
-                        <ChatItem key={session.id} session={session} index={index} />
-                      ))}
-                    </div>
+              {/* Older */}
+              {groupedSessions.older.length > 0 && (
+                <div>
+                  <h3 className="text-xs text-[#9B9380] uppercase tracking-wider mb-3 px-2 font-bold ancient-rune">
+                    Older
+                  </h3>
+                  <div className="space-y-1">
+                    {groupedSessions.older.map((session, index) => (
+                      <ChatItem key={session.id} session={session} index={index} />
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
             </>
           )}
         </div>

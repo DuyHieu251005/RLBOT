@@ -81,8 +81,6 @@ jobs:
       - name: Add server to known hosts
         run: |
           mkdir -p ~/.ssh
-          echo "🔍 Checking connectivity to ${{ secrets.SERVER_HOST }}..."
-          nc -zv ${{ secrets.SERVER_HOST }} 22 || echo "⚠️ Cannot connect to port 22"
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy to server

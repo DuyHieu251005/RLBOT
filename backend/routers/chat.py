@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session as DbSession
 from typing import List
 import uuid
+from datetime import datetime
 
 from dependencies import get_db
 from schemas import ChatSessionCreate, ChatSessionUpdate, MessageAdd
@@ -125,10 +126,8 @@ async def add_message_to_session(
 
     # Add the new message
     new_message = add_session_message(session, session_id, message_data.role, message_data.content)
-    session.commit()
-
-    # Update session's updated_at timestamp
-    chat_session.updated_at = None  # Will be set by onupdate
+    
+    chat_session.updated_at = datetime.utcnow()
     session.commit()
 
     return {

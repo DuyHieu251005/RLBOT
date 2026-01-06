@@ -309,6 +309,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } else {
         // ... (Existing logic for append)
         logger.log("📝 Appending to EXISTING session:", targetSessionId);
+
         setSessions((prev) =>
           prev.map((session) =>
             session.id === targetSessionId
