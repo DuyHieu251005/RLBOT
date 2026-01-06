@@ -268,23 +268,21 @@ export function KnowledgeBaseSelector({
           <span className="text-xs text-[#9B9380] uppercase tracking-widest font-bold">
             Select from Existing
           </span>
-          {knowledgeBases.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setShowKBList(!showKBList)}
-              className="text-xs text-[#9D4EDD] hover:underline flex items-center gap-1"
-            >
-              {showKBList ? (
-                <>
-                  <X className="w-3 h-3" /> Close
-                </>
-              ) : (
-                <>
-                  <Plus className="w-3 h-3" /> Add
-                </>
-              )}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setShowKBList(!showKBList)}
+            className="text-xs text-[#9D4EDD] hover:underline flex items-center gap-1"
+          >
+            {showKBList ? (
+              <>
+                <X className="w-3 h-3" /> Close
+              </>
+            ) : (
+              <>
+                <Plus className="w-3 h-3" /> Add
+              </>
+            )}
+          </button>
         </div>
 
         {/* Selected KBs Display */}

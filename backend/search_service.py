@@ -160,19 +160,32 @@ async def retrieve_context(
     if not valid_results:
         print("No relevant chunks found")
         
-        # Fallback: If bot_id provided, try to get raw file content
+        # Fallback: Retrieve raw file content from Bot AND Knowledge Bases
+        all_files = []
+        
         if bot_id:
-            print(f"Fallback: Retrieving raw file content for bot {bot_id}")
-            files = db_session.query(File).filter(File.bot_id == bot_id).all()
-            if files:
-                context_parts = []
-                for f in files:
-                    if f.content:
-                        context_parts.append(f"[Source: {f.filename}]\n{f.content}")
-                if context_parts:
-                    full_context = "\n\n---\n\n".join(context_parts)
-                    print(f"Fallback: Retrieved {len(files)} files, total context length: {len(full_context)} chars")
-                    return full_context
+            bot_files = db_session.query(File).filter(File.bot_id == bot_id).all()
+            all_files.extend(bot_files)
+            
+        if knowledge_base_ids:
+            kb_files = db_session.query(File).filter(File.knowledge_base_id.in_(knowledge_base_ids)).all()
+            all_files.extend(kb_files)
+            
+        if all_files:
+            print(f"Fallback: Retrieving raw content from {len(all_files)} files")
+            context_parts = []
+            for f in all_files:
+                if f.content:
+                    context_parts.append(f"[Source: {f.filename}]\n{f.content}")
+                    
+            if context_parts:
+                full_context = "\n\n---\n\n".join(context_parts)
+                # Truncate to avoid exceeding token limits (approx 30k chars)
+                if len(full_context) > 30000:
+                    full_context = full_context[:30000] + "... (truncated)"
+                    
+                print(f"Fallback: Total context length: {len(full_context)} chars")
+                return full_context
         
         return ""
 
