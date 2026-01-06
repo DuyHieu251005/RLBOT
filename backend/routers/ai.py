@@ -104,6 +104,10 @@ async def chat_with_stream(request: CombinedChatRequest, session: DbSession = De
                     db_session=session,
                 )
             
+            # Step 2: Build full prompt (same as combined endpoint)
+            provider = request.provider or settings.DEFAULT_AI_PROVIDER
+            full_prompt = request.prompt
+            if context:
                 full_prompt = f"""### SYSTEM ROLE & STRICT INSTRUCTIONS
 You are a specialized Knowledge Retrieval Assistant. You are strictly bound by the following "Context Information".
 You are also an expert in Information Presentation.
