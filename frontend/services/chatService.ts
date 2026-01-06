@@ -127,17 +127,22 @@ export async function getGeminiResponse(
         userLanguage = detectLanguage(prompt);
     }
 
+    // Check if we should use the combined endpoint (when KB/Bot involved)
+    const useCombinedEndpoint = (knowledgeBaseIds && knowledgeBaseIds.length > 0) || botId;
+
     // Add language instruction
     let languageInstruction = "";
     if (autoDetectLanguage) {
         languageInstruction = `\n\nIMPORTANT: The user is asking in ${userLanguage}. You MUST respond in ${userLanguage} language only.`;
     }
-    const finalInstructions =
-        (systemInstructions?.trim() || DEFAULT_RAG_INSTRUCTIONS) +
-        languageInstruction;
 
-    // Check if we should use the combined endpoint (when KB/Bot involved)
-    const useCombinedEndpoint = (knowledgeBaseIds && knowledgeBaseIds.length > 0) || botId;
+    // [FIX] Only use strict RAG instructions if we are actually doing RAG
+    // For free models/direct chat, allow general knowledge (empty default)
+    const defaultInstructions = useCombinedEndpoint ? DEFAULT_RAG_INSTRUCTIONS : "";
+
+    const finalInstructions =
+        (systemInstructions?.trim() || defaultInstructions) +
+        languageInstruction;
 
     // Delay helper for retry
     const delay = (ms: number) =>
