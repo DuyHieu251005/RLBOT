@@ -263,9 +263,9 @@ export async function getUserChatSessions(
         }
 
         let url = `${BACKEND_URL}/api/chat-sessions/${userId}`;
-        if (botId) {
-            url += `?bot_id=${botId}`;
-        }
+        // if (botId) {
+        //     url += `?bot_id=${botId}`;
+        // }
 
         const response = await fetch(url, {
             headers: {
