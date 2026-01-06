@@ -172,11 +172,26 @@ async def retrieve_context(
             all_files.extend(kb_files)
             
         if all_files:
-            print(f"Fallback: Retrieving raw content from {len(all_files)} files")
+            print(f"Fallback: Found {len(all_files)} files. Retrieving content...")
             context_parts = []
+    
             for f in all_files:
-                if f.content:
-                    context_parts.append(f"[Source: {f.filename}]\n{f.content}")
+                file_content = f.content
+                
+                # If File.content is missing (likely), fetch first 5 chunks
+                if not file_content:
+                    chunks = (
+                        db_session.query(Chunk)
+                        .filter(Chunk.file_id == f.id)
+                        .order_by(Chunk.chunk_index)
+                        .limit(5)
+                        .all()
+                    )
+                    if chunks:
+                        file_content = "\n".join([c.content for c in chunks if c.content])
+                
+                if file_content:
+                    context_parts.append(f"[Source: {f.filename}]\n{file_content}")
                     
             if context_parts:
                 full_context = "\n\n---\n\n".join(context_parts)
