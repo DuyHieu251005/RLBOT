@@ -129,7 +129,7 @@ async def retrieve_context(
 
     # Join with File to access knowledge_base_id and filename
     stmt = (
-        select(Chunk, File.filename)
+        select(Chunk, File.filename, Chunk.embedding.l2_distance(embedding).label("distance"))
         .join(File, Chunk.file_id == File.id)
         .order_by(Chunk.embedding.l2_distance(embedding))
         .limit(max_chunks)
@@ -153,7 +153,11 @@ async def retrieve_context(
 
     results = db_session.execute(stmt).all()
 
-    if not results:
+    # Filter out irrelevant chunks (distance > 0.8)
+    # This ensures we don't return garbage context, and allows Fallback to trigger
+    valid_results = [r for r in results if r.distance < 0.8]
+
+    if not valid_results:
         print("No relevant chunks found")
         
         # Fallback: If bot_id provided, try to get raw file content
@@ -174,7 +178,7 @@ async def retrieve_context(
 
     # Step 3: Aggregate context
     context_parts = []
-    for chunk, filename in results:
+    for chunk, filename, _ in valid_results:
         source = filename or "Unknown source"
         content = chunk.content or ""
         context_parts.append(f"[Source: {source}]\n{content}")
@@ -182,7 +186,7 @@ async def retrieve_context(
     full_context = "\n\n---\n\n".join(context_parts)
 
     print(
-        f"Retrieved {len(results)} chunks, total context length: {len(full_context)} chars"
+        f"Retrieved {len(valid_results)} chunks, total context length: {len(full_context)} chars"
     )
 
     return full_context
