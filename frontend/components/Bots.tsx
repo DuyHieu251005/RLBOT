@@ -353,12 +353,21 @@ export const Bots = memo(function Bots({
                                   <Share2 size={14} /> Share
                                 </DropdownMenuItem>
                               )}
-                              <DropdownMenuItem
+                              {/* Hide Embed for Internal Bots */}
+                              {bot.isPublic && (
+                                <DropdownMenuItem
+                                  onClick={() => setEmbedBot(bot)}
+                                  className="px-3 py-2.5 text-white/80 focus:bg-[#9D4EDD]/20 focus:text-white flex items-center gap-2 cursor-pointer rounded-lg"
+                                >
+                                  <Code size={14} /> Embed
+                                </DropdownMenuItem>
+                              )}
+                              {/* <DropdownMenuItem
                                 onClick={() => setEmbedBot(bot)}
                                 className="px-3 py-2.5 text-white/80 focus:bg-[#9D4EDD]/20 focus:text-white flex items-center gap-2 cursor-pointer rounded-lg"
                               >
                                 <Code size={14} /> Embed
-                              </DropdownMenuItem>
+                              </DropdownMenuItem> */}
                               <DropdownMenuSeparator className="bg-white/10" />
                               <DropdownMenuItem
                                 onClick={() => handleDelete(bot)}
