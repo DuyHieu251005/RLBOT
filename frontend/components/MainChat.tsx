@@ -161,7 +161,7 @@ export function MainChat({
           activeBot.knowledgeBaseIds || [],
           false,
           false,
-          activeBot.id, // Pass botId for file retrieval
+          ["gemini-pro", "deepseek-r1t2"].includes(activeBot.id) ? undefined : activeBot.id, // Only pass botId for real bots to enable RAG
           activeBot.aiProvider || "gemini"
         );
         const newPrompts = response.split("\n").map(l => l.replace(/^\d+\.\s*/, "").replace(/^-\s*/, "").trim()).filter(l => l.length > 0).slice(0, 4);

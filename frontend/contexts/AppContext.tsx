@@ -330,6 +330,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         const botAIProvider = activeBot?.aiProvider || aiProvider;
 
+        const isFreeModel = ["gemini-pro", "deepseek-r1t2"].includes(activeBot?.id || "");
+        const botIdToSend = isFreeModel ? undefined : activeBot?.id;
+
         const aiResponseText = await getGeminiResponse(
           text,
           finalInstructions,
@@ -337,7 +340,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           activeBot?.knowledgeBaseIds || [],
           true,
           true,
-          activeBot?.id,
+          botIdToSend,
           botAIProvider
         );
 

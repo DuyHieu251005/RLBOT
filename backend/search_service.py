@@ -178,7 +178,6 @@ async def retrieve_context(
             for f in all_files:
                 file_content = f.content
                 
-                # If File.content is missing (likely), fetch first 5 chunks
                 if not file_content:
                     chunks = (
                         db_session.query(Chunk)
