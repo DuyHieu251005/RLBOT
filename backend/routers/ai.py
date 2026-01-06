@@ -185,7 +185,7 @@ async def chat_combined(request: CombinedChatRequest, session: DbSession = Depen
         # Build full prompt
         full_prompt = request.prompt
         if context:
-### SYSTEM ROLE & STRICT INSTRUCTIONS
+            full_prompt = f"""### SYSTEM ROLE & STRICT INSTRUCTIONS
 You are a specialized Knowledge Retrieval Assistant. You are strictly bound by the following "Context Information".
 You are also an expert in Information Presentation.
 
